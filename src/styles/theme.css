@@ -1,8 +1,11 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Base Colors */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-size: 16px;
+
+  /* Light Theme */
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
@@ -23,6 +26,19 @@
   --input: transparent;
   --input-background: #f3f3f5;
   --switch-background: #cbced4;
+
+  /* Semantic Colors - Light */
+  --income: #10b981; /* Emerald */
+  --expense: #f43f5e; /* Rose */
+  --goal: #f59e0b; /* Amber */
+  --income-light: #d1fae5;
+  --expense-light: #fee2e2;
+  --goal-light: #fef3c7;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --ring: oklch(0.708 0 0);
@@ -43,6 +59,7 @@
 }
 
 .dark {
+  /* Dark Theme */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);
@@ -62,6 +79,19 @@
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
+
+  /* Semantic Colors - Dark */
+  --income: #34d399; /* Brighter emerald for dark mode */
+  --expense: #fb7185; /* Brighter rose for dark mode */
+  --goal: #fbbf24; /* Brighter amber for dark mode */
+  --income-light: rgba(16, 185, 129, 0.1);
+  --expense-light: rgba(244, 63, 94, 0.1);
+  --goal-light: rgba(245, 158, 11, 0.1);
+
+  /* Glassmorphism - Dark */
+  --glass-bg: rgba(31, 41, 55, 0.8);
+  --glass-border: rgba(75, 85, 99, 0.3);
+
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --chart-1: oklch(0.488 0.243 264.376);
@@ -106,6 +136,19 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Semantic Colors */
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-goal: var(--goal);
+  --color-income-light: var(--income-light);
+  --color-expense-light: var(--expense-light);
+  --color-goal-light: var(--goal-light);
+
+  /* Glassmorphism */
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -125,19 +168,74 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    /* Otimização de scroll para mobile */
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Previne scroll bounce em iOS */
+    overscroll-behavior: none;
+    /* Otimização de performance */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Otimização de botões e interações */
+  button, [role="button"] {
+    /* Previne seleção de texto */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    /* Previne highlight azul no iOS */
+    -webkit-tap-highlight-color: transparent;
+
+    /* Otimização de toque */
+    touch-action: manipulation;
+  }
+
+  /* Scrollbar customizado */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Otimização de animações */
+  .animate-smooth {
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+
+  /* Estados ativos para botões */
+  button:active, [role="button"]:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease-out;
+  }
+
+  /* Previne zoom no input number no iOS */
+  input[type="number"] {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 
   /**
   * Default typography styles for HTML elements (h1-h4, p, label, button, input).
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
   */
-
-  html {
-    font-size: var(--font-size);
-    font-family: var(--font-family);
-  }
 
   h1 {
     font-size: var(--text-2xl);
