@@ -24,6 +24,7 @@ import {
   Eye,
   EyeOff,
   CheckCircle,
+  History,
   AlertCircle,
   Loader2,
   Sparkles,
@@ -436,6 +437,8 @@ function TransactionModal({
   const [tags, setTags] = useState<string[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const resetForm = () => {
     setType('expense');
@@ -445,6 +448,34 @@ function TransactionModal({
     setAccount('principal');
     setTags([]);
     setDate(new Date().toISOString().split('T')[0]);
+  };
+
+  // Generate suggestions based on transaction history
+  const generateSuggestions = useMemo(() => {
+    const history = transactions
+      .filter(t => t.type === type)
+      .map(t => t.description)
+      .filter((desc, index, arr) => arr.indexOf(desc) === index) // Remove duplicates
+      .slice(0, 5); // Limit to 5 suggestions
+    return history;
+  }, [transactions, type]);
+
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    if (value.length > 0) {
+      const filtered = generateSuggestions.filter(s =>
+        s.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = (suggestion: string) => {
+    setDescription(suggestion);
+    setShowSuggestions(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -537,18 +568,50 @@ function TransactionModal({
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Descrição
               </label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Ex: Almoço no restaurante"
-                className={`w-full p-4 rounded-2xl border ${
-                  darkMode
-                    ? 'bg-gray-700 border-gray-600'
-                    : 'bg-gray-50 border-gray-100'
-                } focus:ring-2 focus:ring-emerald-500 outline-none`}
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => handleDescriptionChange(e.target.value)}
+                  placeholder={type === 'income' ? 'Ex: Salário, Freelance, Dividendos...' : 'Ex: Almoço, Transporte, Compras...'}
+                  className={`w-full p-4 rounded-2xl border ${
+                    darkMode
+                      ? 'bg-gray-800 border-gray-700 focus:border-gray-600'
+                      : 'bg-gray-50 border-gray-200 focus:border-gray-300'
+                  } focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all`}
+                  required
+                />
+
+                {/* Suggestions Dropdown */}
+                <AnimatePresence>
+                  {showSuggestions && suggestions.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className={`absolute top-full left-0 right-0 mt-2 ${
+                        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                      } border rounded-2xl shadow-xl z-10 max-h-40 overflow-y-auto`}
+                    >
+                      {suggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => selectSuggestion(suggestion)}
+                          className={`w-full p-3 text-left hover:${
+                            darkMode ? 'bg-gray-700' : 'bg-gray-50'
+                          } transition-colors first:rounded-t-2xl last:rounded-b-2xl`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <History size={16} className="opacity-50" />
+                            <span className="font-medium">{suggestion}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             <div>
