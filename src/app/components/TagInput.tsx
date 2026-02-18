@@ -57,7 +57,7 @@ export function TagInput({ tags, onTagsChange, placeholder = 'Adicionar tags...'
         onKeyDown={handleKeyDown}
         placeholder={tags.length === 0 ? placeholder : ''}
         className={`flex-1 min-w-[120px] bg-transparent outline-none text-sm ${
-          darkMode ? 'placeholder-gray-500' : 'placeholder-gray-400'
+          darkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
         }`}
       />
     </div>

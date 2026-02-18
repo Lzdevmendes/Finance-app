@@ -92,7 +92,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     const unsubPrefs = onSnapshot(prefsRef, (snapshot) => {
       if (snapshot.exists()) {
-        setPreferences(snapshot.data() as Preferences);
+        const prefsData = snapshot.data() as Preferences;
+        setPreferences(prefsData);
+        // Save to localStorage for immediate theme application
+        localStorage.setItem('finance-app-preferences', JSON.stringify(prefsData));
       }
     }, (err) => console.error("Erro preferências:", err));
 
@@ -100,6 +103,55 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     return () => { unsubTrans(); unsubGoals(); unsubPrefs(); };
   }, [user]);
+
+  // Apply theme to DOM when preferences change
+  useEffect(() => {
+    // Apply dark mode class
+    if (preferences.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    // Apply theme colors using CSS custom properties
+    const themeColors = {
+      emerald: {
+        primary: '#10b981',
+        primaryHover: '#059669',
+        light: '#ecfdf5',
+        gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+      },
+      blue: {
+        primary: '#3b82f6',
+        primaryHover: '#2563eb',
+        light: '#eff6ff',
+        gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+      },
+      purple: {
+        primary: '#8b5cf6',
+        primaryHover: '#7c3aed',
+        light: '#faf5ff',
+        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+      },
+      rose: {
+        primary: '#f43f5e',
+        primaryHover: '#e11d48',
+        light: '#fff1f2',
+        gradient: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)'
+      }
+    };
+
+    const colors = themeColors[preferences.theme];
+    if (colors) {
+      document.documentElement.style.setProperty('--theme-primary', colors.primary);
+      document.documentElement.style.setProperty('--theme-primary-hover', colors.primaryHover);
+      document.documentElement.style.setProperty('--theme-light', colors.light);
+      document.documentElement.style.setProperty('--theme-gradient', colors.gradient);
+    }
+
+    // Save to localStorage for immediate theme application on page reload
+    localStorage.setItem('finance-app-preferences', JSON.stringify(preferences));
+  }, [preferences]);
 
   const addTransaction = async (transaction: Omit<Transaction, 'id' | 'userId' | 'createdAt'>) => {
     if (!user) return;
@@ -143,6 +195,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     const updated = { ...preferences, ...newPreferences };
     setPreferences(updated);
+
+    // Save to localStorage for immediate theme application
+    localStorage.setItem('finance-app-preferences', JSON.stringify(updated));
+
     await setDoc(doc(db, 'users', user.uid, 'preferences', 'settings'), updated);
   };
 

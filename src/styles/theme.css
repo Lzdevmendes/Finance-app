@@ -5,6 +5,12 @@
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-size: 16px;
 
+  /* Theme Variables - Default to emerald */
+  --theme-primary: #10b981;
+  --theme-primary-hover: #059669;
+  --theme-light: #ecfdf5;
+  --theme-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
   /* Light Theme */
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
@@ -56,6 +62,27 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* Theme utility classes */
+.theme-primary {
+  background-color: var(--theme-primary);
+}
+
+.theme-primary-hover:hover {
+  background-color: var(--theme-primary-hover);
+}
+
+.theme-light {
+  background-color: var(--theme-light);
+}
+
+.theme-text {
+  color: var(--theme-primary);
+}
+
+.theme-gradient {
+  background: var(--theme-gradient);
 }
 
 .dark {

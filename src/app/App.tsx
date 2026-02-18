@@ -48,13 +48,13 @@ import {
   Bar,
   Area,
   AreaChart,
+  CartesianGrid,
 } from 'recharts';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { FinanceProvider, useFinance } from './contexts/FinanceContext';
 import { CategoryIcon } from './components/CategoryIcon';
 import { TagInput } from './components/TagInput';
 import CurrencyInput from 'react-currency-input-field';
-
 // Enhanced Theme configuration with gradients and better colors
 const themes = {
   emerald: {
@@ -102,7 +102,6 @@ const themes = {
     shadow: 'shadow-rose-100',
   },
 };
-
 const categories = [
   { value: 'alimentacao', label: 'Alimentação', icon: '🍽️' },
   { value: 'lazer', label: 'Lazer', icon: '🎉' },
@@ -126,7 +125,6 @@ const categories = [
   { value: 'doacoes', label: 'Doações', icon: '❤️' },
   { value: 'outros', label: 'Outros', icon: '📝' },
 ];
-
 function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -137,17 +135,14 @@ function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { signIn, signUp } = useAuth();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     setLoading(true);
-
     const { error } = isLogin
       ? await signIn(email, password)
       : await signUp(email, password, name);
-
     if (error) {
       setError(error.message || 'Ocorreu um erro. Tente novamente.');
     } else if (!isLogin) {
@@ -156,7 +151,6 @@ function AuthScreen() {
     }
     setLoading(false);
   };
-
   const containerVariants = {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
@@ -169,12 +163,10 @@ function AuthScreen() {
       }
     }
   };
-
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background decorations */}
@@ -204,7 +196,6 @@ function AuthScreen() {
           className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-200/30 to-rose-200/30 rounded-full blur-3xl"
         />
       </div>
-
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -235,10 +226,9 @@ function AuthScreen() {
             Controle suas finanças com estilo
           </motion.p>
         </motion.div>
-
         <motion.div
           variants={itemVariants}
-          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/10 p-8 border border-white/20"
+          className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl shadow-black/10 p-8 border border-white/20"
         >
           <div className="flex gap-2 p-1 bg-gray-100/80 rounded-2xl mb-8">
             <motion.button
@@ -274,7 +264,6 @@ function AuthScreen() {
               Criar Conta
             </motion.button>
           </div>
-
           <motion.form
             key={isLogin ? 'login' : 'signup'}
             initial={{ opacity: 0, x: isLogin ? -20 : 20 }}
@@ -299,14 +288,13 @@ function AuthScreen() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 bg-white/80 backdrop-blur-sm"
                     placeholder="Seu nome completo"
                     required={!isLogin}
                   />
                 </motion.div>
               )}
             </AnimatePresence>
-
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
                 Email
@@ -315,12 +303,11 @@ function AuthScreen() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 bg-white/80 backdrop-blur-sm"
                 placeholder="seu@email.com"
                 required
               />
             </div>
-
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
                 Senha
@@ -330,7 +317,7 @@ function AuthScreen() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 bg-white/80 backdrop-blur-sm"
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -344,7 +331,6 @@ function AuthScreen() {
                 </button>
               </div>
             </div>
-
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -357,7 +343,6 @@ function AuthScreen() {
                   <p className="text-rose-700 text-sm">{error}</p>
                 </motion.div>
               )}
-
               {success && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -370,7 +355,6 @@ function AuthScreen() {
                 </motion.div>
               )}
             </AnimatePresence>
-
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -392,7 +376,6 @@ function AuthScreen() {
             </motion.button>
           </motion.form>
         </motion.div>
-
         <motion.div
           variants={itemVariants}
           className="text-center mt-6 text-sm text-gray-500"
@@ -416,7 +399,6 @@ function AuthScreen() {
     </div>
   );
 }
-
 function TransactionModal({
   show,
   onClose,
@@ -439,7 +421,6 @@ function TransactionModal({
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-
   const resetForm = () => {
     setType('expense');
     setDescription('');
@@ -449,7 +430,6 @@ function TransactionModal({
     setTags([]);
     setDate(new Date().toISOString().split('T')[0]);
   };
-
   // Generate suggestions based on transaction history
   const generateSuggestions = useMemo(() => {
     const history = transactions
@@ -459,7 +439,6 @@ function TransactionModal({
       .slice(0, 5); // Limit to 5 suggestions
     return history;
   }, [transactions, type]);
-
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
     if (value.length > 0) {
@@ -472,16 +451,13 @@ function TransactionModal({
       setShowSuggestions(false);
     }
   };
-
   const selectSuggestion = (suggestion: string) => {
     setDescription(suggestion);
     setShowSuggestions(false);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await addTransaction({
         description,
@@ -500,37 +476,26 @@ function TransactionModal({
       setLoading(false);
     }
   };
-
   if (!show) return null;
-
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={onClose}
-        />
-
-        <motion.div
-          initial={{ y: '100%', opacity: 0, scale: 0.95 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: '100%', opacity: 0, scale: 0.95 }}
-          transition={{
-            type: 'spring',
-            damping: 25,
-            stiffness: 200,
-            mass: 0.8,
-            opacity: { duration: 0.2 },
-            scale: { duration: 0.3 }
-          }}
-          className={`${
-            darkMode ? 'bg-gray-800' : 'bg-white'
-          } w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[90vh] overflow-y-auto`}
-        >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{
+          type: 'spring',
+          damping: 25,
+          stiffness: 200,
+          mass: 0.8,
+          opacity: { duration: 0.2 },
+          scale: { duration: 0.3 }
+        }}
+        className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
+          darkMode ? 'bg-gray-800' : 'bg-white'
+        } w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[80vh] overflow-y-auto z-[1001]`}
+        onClick={(e) => e.stopPropagation()}
+      >
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -558,7 +523,6 @@ function TransactionModal({
               </motion.button>
             </div>
           </motion.div>
-
           <motion.form
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -597,7 +561,6 @@ function TransactionModal({
                 Despesa
               </button>
             </motion.div>
-
             <div>
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Descrição
@@ -615,7 +578,6 @@ function TransactionModal({
                   } focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all`}
                   required
                 />
-
                 {/* Suggestions Dropdown */}
                 <AnimatePresence>
                   {showSuggestions && suggestions.length > 0 && (
@@ -647,7 +609,6 @@ function TransactionModal({
                 </AnimatePresence>
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Valor
@@ -668,7 +629,6 @@ function TransactionModal({
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Categoria
@@ -689,7 +649,6 @@ function TransactionModal({
                 ))}
               </select>
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Data
@@ -705,7 +664,6 @@ function TransactionModal({
                 } outline-none`}
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Conta
@@ -724,7 +682,6 @@ function TransactionModal({
                 <option value="cartao">Cartão de Crédito</option>
               </select>
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Tags
@@ -736,21 +693,18 @@ function TransactionModal({
                 darkMode={darkMode}
               />
             </div>
-
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-4 ${themes[theme].primary} text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all disabled:opacity-50`}
+              className="w-full py-4 theme-primary text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all disabled:opacity-50"
             >
               {loading ? 'Salvando...' : 'Confirmar Lançamento'}
             </button>
           </motion.form>
         </motion.div>
-      </div>
     </AnimatePresence>
   );
 }
-
 function GoalModal({
   show,
   onClose,
@@ -773,17 +727,14 @@ function GoalModal({
     editGoal?.currentAmount?.toString() || ''
   );
   const [loading, setLoading] = useState(false);
-
   const resetForm = () => {
     setName('');
     setTargetAmount('');
     setCurrentAmount('');
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (editGoal) {
         await updateGoal(editGoal.id, {
@@ -808,37 +759,26 @@ function GoalModal({
       setLoading(false);
     }
   };
-
   if (!show) return null;
-
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={onClose}
-        />
-
-        <motion.div
-          initial={{ y: '100%', opacity: 0, scale: 0.95 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: '100%', opacity: 0, scale: 0.95 }}
-          transition={{
-            type: 'spring',
-            damping: 25,
-            stiffness: 200,
-            mass: 0.8,
-            opacity: { duration: 0.2 },
-            scale: { duration: 0.3 }
-          }}
-          className={`${
-            darkMode ? 'bg-gray-800' : 'bg-white'
-          } w-full max-w-md p-8 rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[90vh] overflow-y-auto`}
-        >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{
+          type: 'spring',
+          damping: 25,
+          stiffness: 200,
+          mass: 0.8,
+          opacity: { duration: 0.2 },
+          scale: { duration: 0.3 }
+        }}
+        className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
+          darkMode ? 'bg-gray-800' : 'bg-white'
+        } w-full max-w-md p-8 rounded-3xl relative shadow-2xl max-h-[80vh] overflow-y-auto z-[1001]`}
+        onClick={(e) => e.stopPropagation()}
+      >
           <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6 sm:hidden" />
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
@@ -848,7 +788,6 @@ function GoalModal({
           >
             {editGoal ? 'Editar Meta' : 'Nova Meta'}
           </motion.h3>
-
           <motion.form
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -877,7 +816,6 @@ function GoalModal({
                 required
               />
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -902,7 +840,6 @@ function GoalModal({
                 required
               />
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -926,57 +863,68 @@ function GoalModal({
                 } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl`}
               />
             </motion.div>
-
-            <motion.button
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.4 }}
-              type="submit"
-              disabled={loading}
-              className={`w-full py-4 ${themes[theme].primary} text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all disabled:opacity-50`}
+              className="flex gap-3 mt-6"
             >
-              {loading ? 'Salvando...' : editGoal ? 'Atualizar Meta' : 'Criar Meta'}
-            </motion.button>
+              <button
+                onClick={onClose}
+                className={`flex-1 py-3 rounded-2xl font-semibold border ${
+                  darkMode ? 'border-gray-600' : 'border-gray-200'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="theme-primary flex-1 py-3 rounded-2xl font-semibold text-white shadow-lg disabled:opacity-50"
+              >
+                {loading ? 'Salvando...' : editGoal ? 'Atualizar Meta' : 'Criar Meta'}
+              </button>
+            </motion.div>
           </motion.form>
         </motion.div>
-      </div>
     </AnimatePresence>
   );
 }
-
 function Dashboard() {
   const { transactions, preferences } = useFinance();
   const { theme, darkMode } = preferences;
-
-  const stats = useMemo(() => {
+  const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
+    return now.getMonth() + 1;
+  });
+  const [selectedYear, setSelectedYear] = useState(() => {
+    const now = new Date();
+    return now.getFullYear();
+  });
+  const stats = useMemo(() => {
     const monthTransactions = transactions.filter((t) => {
       const date = new Date(t.date);
-      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+      return date.getMonth() === selectedMonth - 1 && date.getFullYear() === selectedYear;
     });
-
     const income = monthTransactions
       .filter((t) => t.type === 'income')
       .reduce((acc, t) => acc + t.value, 0);
-
     const expenses = monthTransactions
       .filter((t) => t.type === 'expense')
       .reduce((acc, t) => acc + t.value, 0);
-
     return { income, expenses, balance: income - expenses };
-  }, [transactions]);
-
+  }, [transactions, selectedMonth, selectedYear]);
   const chartData = useMemo(() => {
+    const monthTransactions = transactions.filter((t) => {
+      const date = new Date(t.date);
+      return date.getMonth() === selectedMonth - 1 && date.getFullYear() === selectedYear;
+    });
     const categoryTotals: Record<string, number> = {};
-    transactions
+    monthTransactions
       .filter((t) => t.type === 'expense')
       .forEach((t) => {
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.value;
       });
-
     return Object.entries(categoryTotals)
       .map(([name, value]) => ({
         name: categories.find((c) => c.value === name)?.label || name,
@@ -984,37 +932,58 @@ function Dashboard() {
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
-  }, [transactions]);
-
+  }, [transactions, selectedMonth, selectedYear]);
   const monthlyData = useMemo(() => {
-    const months: Record<string, { income: number; expense: number }> = {};
-    
-    transactions.forEach((t) => {
+    const monthTransactions = transactions.filter((t) => {
       const date = new Date(t.date);
-      const monthKey = `${date.getMonth() + 1}/${date.getFullYear()}`;
-      
-      if (!months[monthKey]) {
-        months[monthKey] = { income: 0, expense: 0 };
+      return date.getMonth() === selectedMonth - 1 && date.getFullYear() === selectedYear;
+    });
+
+    // Group by day for the selected month
+    const days: Record<string, { income: number; expense: number }> = {};
+    monthTransactions.forEach((t) => {
+      const date = new Date(t.date);
+      const dayKey = date.getDate().toString();
+      if (!days[dayKey]) {
+        days[dayKey] = { income: 0, expense: 0 };
       }
-      
       if (t.type === 'income') {
-        months[monthKey].income += t.value;
+        days[dayKey].income += t.value;
       } else {
-        months[monthKey].expense += t.value;
+        days[dayKey].expense += t.value;
       }
     });
 
-    return Object.entries(months)
-      .map(([month, data]) => ({
-        month,
+    return Object.entries(days)
+      .map(([day, data]) => ({
+        month: `Dia ${day}`,
         receitas: data.income,
         despesas: data.expense,
       }))
-      .slice(-6);
+      .sort((a, b) => parseInt(a.month.split(' ')[1]) - parseInt(b.month.split(' ')[1]));
+  }, [transactions, selectedMonth, selectedYear]);
+  const monthNames = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    const currentYear = new Date().getFullYear();
+
+    // Add current year and surrounding years
+    for (let i = -2; i <= 2; i++) {
+      years.add(currentYear + i);
+    }
+
+    // Add years from transactions
+    transactions.forEach((t) => {
+      const date = new Date(t.date);
+      years.add(date.getFullYear());
+    });
+
+    return Array.from(years).sort((a, b) => b - a);
   }, [transactions]);
-
-  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f43f5e', '#f59e0b'];
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1024,15 +993,40 @@ function Dashboard() {
     >
       {/* Balance Card */}
       <div
-        className={`bg-gradient-to-br ${themes[theme].gradient} p-6 rounded-[2rem] text-white shadow-xl space-y-4`}
+        className="bg-gradient-to-br theme-gradient p-6 rounded-[2rem] text-white shadow-xl space-y-4"
       >
-        <div>
-          <span className="text-sm opacity-90">Saldo do Mês</span>
-          <h3 className="text-4xl font-bold mt-1">
-            R$ {stats.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </h3>
+        <div className="flex justify-between items-center">
+          <div>
+            <span className="text-sm opacity-90">Saldo do Mês</span>
+            <h3 className="text-3xl font-bold mt-1">
+              R$ {stats.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </h3>
+          </div>
+          <div className="flex gap-2 mr-4">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-3 py-2 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50"
+            >
+              {monthNames.map((month, index) => (
+                <option key={index + 1} value={index + 1} className="text-gray-900">
+                  {month}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-3 py-2 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50"
+            >
+              {availableYears.map((year) => (
+                <option key={year} value={year} className="text-gray-900">
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-
         <div className="grid grid-cols-2 gap-4 pt-2">
           <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
             <div className="flex items-center gap-2 mb-2">
@@ -1043,7 +1037,6 @@ function Dashboard() {
               R$ {stats.income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </div>
-
           <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
             <div className="flex items-center gap-2 mb-2">
               <ArrowDownCircle size={18} />
@@ -1055,181 +1048,432 @@ function Dashboard() {
           </div>
         </div>
       </div>
-
       {/* Charts Grid */}
       <div className="grid gap-4">
         {/* Pie Chart - Top Categories */}
         {chartData.length > 0 && (
           <div
-            className={`${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            } p-5 rounded-3xl shadow-sm border ${
-              darkMode ? 'border-gray-700' : 'border-gray-100'
-            }`}
+            className={`relative overflow-hidden ${
+              darkMode
+                ? 'bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900'
+                : 'bg-gradient-to-br from-white via-gray-50 to-gray-100'
+            } p-6 rounded-3xl shadow-2xl border ${
+              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+            } backdrop-blur-sm`}
+            style={{
+              background: darkMode
+                ? 'linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)'
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%)',
+              boxShadow: darkMode
+                ? '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                : '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8)',
+            }}
           >
-            <h4 className="font-bold mb-4 flex items-center gap-2">
-              <PieChartIcon size={18} />
-              Principais Despesas
-            </h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={5}
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number) =>
-                      `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                    }
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/10 to-blue-400/10 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/10 to-pink-400/10 rounded-full blur-2xl translate-y-12 -translate-x-12" />
+
+            <div className="relative z-10">
+              <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg">
+                  <PieChartIcon size={20} className="text-white" />
+                </div>
+                <span className={darkMode ? 'text-white' : 'text-gray-900'}>
+                  Principais Despesas
+                </span>
+              </h4>
+
+              <div className="h-80 mb-6">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <defs>
+                      <filter id="pieGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      <filter id="pieShadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(0,0,0,0.1)"/>
+                      </filter>
+                    </defs>
+                    <Pie
+                      data={chartData}
+                      innerRadius={80}
+                      outerRadius={120}
+                      paddingAngle={4}
+                      dataKey="value"
+                      animationBegin={300}
+                      animationDuration={1200}
+                      animationEasing="ease-out"
+                      label={({ name, percent }) =>
+                        percent > 0.08 ? `${name}\n${(percent * 100).toFixed(0)}%` : ''
+                      }
+                      labelLine={false}
+                      style={{ filter: 'url(#pieGlow) url(#pieShadow)' }}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                          stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)'}
+                          strokeWidth={3}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) =>
+                        `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                      }
+                      contentStyle={{
+                        backgroundColor: darkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '20px',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        backdropFilter: 'blur(20px)',
+                        border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
+                      }}
+                      labelStyle={{
+                        color: darkMode ? '#F9FAFB' : '#111827',
+                        fontWeight: '700',
+                        marginBottom: '4px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {chartData.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {chartData.map((entry, index) => (
+                    <motion.div
+                      key={entry.name}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.5 }}
+                      className={`flex items-center gap-3 p-3 rounded-xl ${
+                        darkMode ? 'bg-gray-700/50' : 'bg-white/60'
+                      } backdrop-blur-sm border ${
+                        darkMode ? 'border-gray-600/50' : 'border-gray-200/50'
+                      } shadow-sm hover:shadow-md transition-all duration-300`}
+                    >
+                      <div
+                        className="w-4 h-4 rounded-full shadow-lg ring-2 ring-white/20"
+                        style={{
+                          backgroundColor: COLORS[index % COLORS.length],
+                          boxShadow: `0 0 20px ${COLORS[index % COLORS.length]}40`
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm font-medium truncate block ${
+                          darkMode ? 'text-gray-200' : 'text-gray-800'
+                        }`}>
+                          {entry.name}
+                        </span>
+                        <span className={`text-xs ${
+                          darkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                          R$ {entry.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
-
         {/* Monthly Trend Chart */}
         {monthlyData.length > 0 && (
           <div
-            className={`${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            } p-5 rounded-3xl shadow-sm border ${
-              darkMode ? 'border-gray-700' : 'border-gray-100'
-            }`}
+            className={`relative overflow-hidden ${
+              darkMode
+                ? 'bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900'
+                : 'bg-gradient-to-br from-white via-gray-50 to-gray-100'
+            } p-6 rounded-3xl shadow-2xl border ${
+              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+            } backdrop-blur-sm`}
+            style={{
+              background: darkMode
+                ? 'linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)'
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%)',
+              boxShadow: darkMode
+                ? '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                : '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8)',
+            }}
           >
-            <h4 className="font-bold mb-4 flex items-center gap-2">
-              <TrendingUp size={18} />
-              Evolução Mensal
-            </h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyData}>
-                  <defs>
-                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    formatter={(value: number) =>
-                      `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                    }
-                    contentStyle={{
-                      backgroundColor: darkMode ? '#374151' : '#ffffff',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="receitas"
-                    stroke="#10b981"
-                    fillOpacity={1}
-                    fill="url(#incomeGradient)"
-                    strokeWidth={3}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="despesas"
-                    stroke="#f43f5e"
-                    fillOpacity={1}
-                    fill="url(#expenseGradient)"
-                    strokeWidth={3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-emerald-400/8 to-teal-400/8 rounded-full blur-3xl -translate-y-20 translate-x-20" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-400/8 to-indigo-400/8 rounded-full blur-3xl translate-y-16 -translate-x-16" />
+
+            <div className="relative z-10">
+              <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                  <TrendingUp size={20} className="text-white" />
+                </div>
+                <span className={darkMode ? 'text-white' : 'text-gray-900'}>
+                  Evolução Diária - {monthNames[selectedMonth - 1]} {selectedYear}
+                </span>
+              </h4>
+
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={monthlyData}>
+                    <defs>
+                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
+                        <stop offset="30%" stopColor="#10b981" stopOpacity={0.2}/>
+                        <stop offset="70%" stopColor="#10b981" stopOpacity={0.1}/>
+                        <stop offset="100%" stopColor="#10b981" stopOpacity={0.02}/>
+                      </linearGradient>
+                      <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.4}/>
+                        <stop offset="30%" stopColor="#f43f5e" stopOpacity={0.2}/>
+                        <stop offset="70%" stopColor="#f43f5e" stopOpacity={0.1}/>
+                        <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.02}/>
+                      </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      <filter id="areaShadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="rgba(0,0,0,0.15)"/>
+                      </filter>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={darkMode ? 'rgba(156, 163, 175, 0.2)' : 'rgba(107, 114, 128, 0.2)'}
+                      strokeWidth={1}
+                      horizontal={true}
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                      tickMargin={12}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                      tickMargin={8}
+                    />
+                    <Tooltip
+                      formatter={(value: number) =>
+                        `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                      }
+                      labelFormatter={(label) => `${label}`}
+                      contentStyle={{
+                        backgroundColor: darkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '20px',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        backdropFilter: 'blur(20px)',
+                        border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
+                      }}
+                      labelStyle={{
+                        color: darkMode ? '#F9FAFB' : '#111827',
+                        fontWeight: '700',
+                        marginBottom: '4px'
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="receitas"
+                      stroke="#10b981"
+                      fillOpacity={1}
+                      fill="url(#incomeGradient)"
+                      strokeWidth={3}
+                      dot={{
+                        fill: '#10b981',
+                        strokeWidth: 2,
+                        r: 5,
+                        filter: 'url(#glow)',
+                        stroke: darkMode ? '#1F2937' : '#ffffff'
+                      }}
+                      activeDot={{
+                        r: 7,
+                        stroke: '#10b981',
+                        strokeWidth: 3,
+                        filter: 'url(#glow)',
+                        fill: darkMode ? '#1F2937' : '#ffffff'
+                      }}
+                      animationDuration={1500}
+                      animationEasing="ease-out"
+                      style={{ filter: 'url(#areaShadow)' }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="despesas"
+                      stroke="#f43f5e"
+                      fillOpacity={1}
+                      fill="url(#expenseGradient)"
+                      strokeWidth={3}
+                      dot={{
+                        fill: '#f43f5e',
+                        strokeWidth: 2,
+                        r: 5,
+                        filter: 'url(#glow)',
+                        stroke: darkMode ? '#1F2937' : '#ffffff'
+                      }}
+                      activeDot={{
+                        r: 7,
+                        stroke: '#f43f5e',
+                        strokeWidth: 3,
+                        filter: 'url(#glow)',
+                        fill: darkMode ? '#1F2937' : '#ffffff'
+                      }}
+                      animationDuration={1500}
+                      animationEasing="ease-out"
+                      animationBegin={300}
+                      style={{ filter: 'url(#areaShadow)' }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         )}
-
         {/* Income vs Expenses Comparison */}
         {monthlyData.length > 0 && (
           <div
-            className={`${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            } p-5 rounded-3xl shadow-sm border ${
-              darkMode ? 'border-gray-700' : 'border-gray-100'
-            }`}
+            className={`relative overflow-hidden ${
+              darkMode
+                ? 'bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900'
+                : 'bg-gradient-to-br from-white via-gray-50 to-gray-100'
+            } p-6 rounded-3xl shadow-2xl border ${
+              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+            } backdrop-blur-sm`}
+            style={{
+              background: darkMode
+                ? 'linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)'
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%)',
+              boxShadow: darkMode
+                ? '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                : '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8)',
+            }}
           >
-            <h4 className="font-bold mb-4 flex items-center gap-2">
-              <BarChart3 size={18} />
-              Receitas vs Despesas
-            </h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData} barCategoryGap="20%">
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    formatter={(value: number) =>
-                      `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                    }
-                    contentStyle={{
-                      backgroundColor: darkMode ? '#374151' : '#ffffff',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                    }}
-                  />
-                  <Bar
-                    dataKey="receitas"
-                    fill="#10b981"
-                    radius={[8, 8, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="despesas"
-                    fill="#f43f5e"
-                    radius={[8, 8, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-purple-400/8 to-pink-400/8 rounded-full blur-3xl -translate-y-18 translate-x-18" />
+            <div className="absolute bottom-0 left-0 w-28 h-28 bg-gradient-to-tr from-orange-400/8 to-red-400/8 rounded-full blur-3xl translate-y-14 -translate-x-14" />
+
+            <div className="relative z-10">
+              <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                  <BarChart3 size={20} className="text-white" />
+                </div>
+                <span className={darkMode ? 'text-white' : 'text-gray-900'}>
+                  Receitas vs Despesas - {monthNames[selectedMonth - 1]} {selectedYear}
+                </span>
+              </h4>
+
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData} barCategoryGap="20%">
+                    <defs>
+                      <linearGradient id="receitasGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                        <stop offset="50%" stopColor="#059669" stopOpacity={0.95} />
+                        <stop offset="100%" stopColor="#047857" stopOpacity={1} />
+                      </linearGradient>
+                      <linearGradient id="despesasGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9} />
+                        <stop offset="50%" stopColor="#e11d48" stopOpacity={0.95} />
+                        <stop offset="100%" stopColor="#dc2626" stopOpacity={1} />
+                      </linearGradient>
+                      <filter id="barGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      <filter id="barShadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="rgba(0,0,0,0.15)"/>
+                      </filter>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
+                      strokeWidth={1}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                      tickMargin={12}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                      tickMargin={8}
+                    />
+                    <Tooltip
+                      formatter={(value: number) =>
+                        `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                      }
+                      labelFormatter={(label) => `${label}`}
+                      contentStyle={{
+                        backgroundColor: darkMode ? 'rgba(55, 65, 81, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '20px',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        backdropFilter: 'blur(20px)',
+                        border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
+                      }}
+                      labelStyle={{
+                        color: darkMode ? '#F9FAFB' : '#111827',
+                        fontWeight: '700',
+                        marginBottom: '4px'
+                      }}
+                    />
+                    <Bar
+                      dataKey="receitas"
+                      fill="url(#receitasGradient)"
+                      radius={[8, 8, 0, 0]}
+                      name="Receitas"
+                      filter="url(#barGlow) url(#barShadow)"
+                      animationBegin={200}
+                      animationDuration={1200}
+                      animationEasing="ease-out"
+                    />
+                    <Bar
+                      dataKey="despesas"
+                      fill="url(#despesasGradient)"
+                      radius={[8, 8, 0, 0]}
+                      name="Despesas"
+                      filter="url(#barGlow) url(#barShadow)"
+                      animationBegin={400}
+                      animationDuration={1200}
+                      animationEasing="ease-out"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         )}
       </div>
-
       {/* Recent Transactions */}
       <div className="space-y-3">
         <div className="flex justify-between items-center px-1">
           <h4 className="font-bold">Transações Recentes</h4>
         </div>
-
         {transactions.slice(0, 5).map((t, index) => (
           <motion.div
             key={t.id}
@@ -1270,7 +1514,6 @@ function Dashboard() {
             </span>
           </motion.div>
         ))}
-
         {transactions.length === 0 && (
           <div className="text-center py-12 opacity-50">
             <p>Nenhuma transação ainda</p>
@@ -1281,7 +1524,6 @@ function Dashboard() {
     </motion.div>
   );
 }
-
 function TransactionsScreen() {
   const { transactions, deleteTransaction, updateTransaction, preferences } = useFinance();
   const { theme, darkMode } = preferences;
@@ -1293,34 +1535,29 @@ function TransactionsScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-
   const accounts = useMemo(() => {
     const uniqueAccounts = [...new Set(transactions.map(t => t.account))];
     return uniqueAccounts.filter(account => account && account.trim() !== '');
   }, [transactions]);
-
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
-      const matchesSearch =
+      const matchesSearch = searchTerm === '' ||
         t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-
+        t.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        t.account.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = filterType === 'all' || t.type === filterType;
       const matchesCategory = filterCategory === 'all' || t.category === filterCategory;
       const matchesAccount = filterAccount === 'all' || t.account === filterAccount;
-
       const transactionDate = new Date(t.date);
       const matchesDateRange =
         (!dateRange.start || transactionDate >= new Date(dateRange.start)) &&
         (!dateRange.end || transactionDate <= new Date(dateRange.end));
-
       return matchesSearch && matchesType && matchesCategory && matchesAccount && matchesDateRange;
     });
   }, [transactions, searchTerm, filterType, filterCategory, filterAccount, dateRange]);
-
   const groupedTransactions = useMemo(() => {
     const groups: Record<string, typeof transactions> = {};
-
     filteredTransactions.forEach((t) => {
       const date = new Date(t.date);
       const key = date.toLocaleDateString('pt-PT', {
@@ -1328,24 +1565,19 @@ function TransactionsScreen() {
         month: 'long',
         year: 'numeric',
       });
-
       if (!groups[key]) {
         groups[key] = [];
       }
       groups[key].push(t);
     });
-
     return groups;
   }, [filteredTransactions]);
-
   const handleEditTransaction = (transaction: any) => {
     setEditingTransaction(transaction);
     setShowEditModal(true);
   };
-
   const handleSaveEdit = async () => {
     if (!editingTransaction) return;
-
     await updateTransaction(editingTransaction.id, {
       description: editingTransaction.description,
       value: editingTransaction.value,
@@ -1354,11 +1586,9 @@ function TransactionsScreen() {
       account: editingTransaction.account,
       date: editingTransaction.date,
     });
-
     setShowEditModal(false);
     setEditingTransaction(null);
   };
-
   const clearFilters = () => {
     setSearchTerm('');
     setFilterType('all');
@@ -1366,7 +1596,6 @@ function TransactionsScreen() {
     setFilterAccount('all');
     setDateRange({ start: '', end: '' });
   };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1385,13 +1614,11 @@ function TransactionsScreen() {
           <Filter size={20} className={showFilters ? 'text-emerald-500' : ''} />
         </button>
       </div>
-
       {/* Search */}
       <div className="relative">
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40"
-          size={20}
-        />
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+          🔍
+        </div>
         <input
           type="text"
           value={searchTerm}
@@ -1399,12 +1626,11 @@ function TransactionsScreen() {
           placeholder="Buscar transações..."
           className={`w-full pl-12 pr-4 py-3 rounded-2xl border ${
             darkMode
-              ? 'bg-gray-800 border-gray-700'
-              : 'bg-white border-gray-100'
+              ? 'bg-gray-800 border-gray-700 text-white'
+              : 'bg-white border-gray-100 text-gray-900'
           } focus:ring-2 focus:ring-emerald-500 outline-none`}
         />
       </div>
-
       {/* Advanced Filters */}
       <AnimatePresence>
         {showFilters && (
@@ -1426,7 +1652,6 @@ function TransactionsScreen() {
                   Limpar
                 </button>
               </div>
-
               {/* Type Filter */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Tipo</label>
@@ -1452,7 +1677,6 @@ function TransactionsScreen() {
                   ))}
                 </div>
               </div>
-
               {/* Category Filter */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Categoria</label>
@@ -1473,7 +1697,6 @@ function TransactionsScreen() {
                   ))}
                 </select>
               </div>
-
               {/* Account Filter */}
               {accounts.length > 0 && (
                 <div>
@@ -1496,7 +1719,6 @@ function TransactionsScreen() {
                   </select>
                 </div>
               )}
-
               {/* Date Range */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -1530,7 +1752,6 @@ function TransactionsScreen() {
           </motion.div>
         )}
       </AnimatePresence>
-
       {/* Quick Filters */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         <button
@@ -1570,7 +1791,6 @@ function TransactionsScreen() {
           Despesas
         </button>
       </div>
-
       {/* Grouped Transactions */}
       <div className="space-y-6">
         {Object.entries(groupedTransactions).map(([date, txs]) => (
@@ -1615,7 +1835,6 @@ function TransactionsScreen() {
                     </div>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <span
@@ -1651,33 +1870,24 @@ function TransactionsScreen() {
             ))}
           </div>
         ))}
-
         {Object.keys(groupedTransactions).length === 0 && (
           <div className="text-center py-12 opacity-50">
             <p>Nenhuma transação encontrada</p>
           </div>
         )}
       </div>
-
       {/* Edit Transaction Modal */}
       <AnimatePresence>
         {showEditModal && editingTransaction && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowEditModal(false)}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-6 rounded-3xl w-full max-w-md z-[1001] relative`}
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className={`${
-                darkMode ? 'bg-gray-800' : 'bg-white'
-              } p-6 rounded-3xl w-full max-w-md`}
-              onClick={(e) => e.stopPropagation()}
-            >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold">Editar Transação</h3>
                 <button
@@ -1687,7 +1897,6 @@ function TransactionsScreen() {
                   <X size={20} />
                 </button>
               </div>
-
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Descrição</label>
@@ -1700,7 +1909,6 @@ function TransactionsScreen() {
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
                   />
                 </div>
-
                 <div>
                   <label className="text-sm font-medium mb-2 block">Valor (R$)</label>
                   <CurrencyInput
@@ -1715,7 +1923,6 @@ function TransactionsScreen() {
                     groupSeparator="."
                   />
                 </div>
-
                 <div>
                   <label className="text-sm font-medium mb-2 block">Categoria</label>
                   <select
@@ -1732,7 +1939,6 @@ function TransactionsScreen() {
                     ))}
                   </select>
                 </div>
-
                 <div>
                   <label className="text-sm font-medium mb-2 block">Conta</label>
                   <input
@@ -1744,7 +1950,6 @@ function TransactionsScreen() {
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
                   />
                 </div>
-
                 <div>
                   <label className="text-sm font-medium mb-2 block">Data</label>
                   <input
@@ -1756,17 +1961,16 @@ function TransactionsScreen() {
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
                   />
                 </div>
-
                 <div>
                   <label className="text-sm font-medium mb-2 block">Tags</label>
                   <TagInput
                     tags={editingTransaction.tags}
-                    onChange={(tags) => setEditingTransaction(prev => ({ ...prev, tags }))}
+                    onTagsChange={(tags) => setEditingTransaction(prev => ({ ...prev, tags }))}
                     placeholder="Adicionar tags..."
+                    darkMode={darkMode}
                   />
                 </div>
               </div>
-
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowEditModal(false)}
@@ -1778,55 +1982,45 @@ function TransactionsScreen() {
                 </button>
                 <button
                   onClick={handleSaveEdit}
-                  className={`${themes[theme].primary} flex-1 py-3 rounded-xl font-semibold text-white shadow-lg`}
+                  className="theme-primary flex-1 py-3 rounded-xl font-semibold text-white shadow-lg"
                 >
                   Salvar
                 </button>
               </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
   );
 }
-
 function GoalsScreen() {
   const { goals, transactions, deleteGoal, updateGoal, preferences } = useFinance();
   const { theme, darkMode } = preferences;
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<any>(null);
-
   // Calculate monthly savings average
   const monthlySavings = useMemo(() => {
     const now = new Date();
     const threeMonthsAgo = new Date(now.setMonth(now.getMonth() - 3));
-
     const recentTransactions = transactions.filter(
       (t) => new Date(t.date) >= threeMonthsAgo
     );
-
     const income = recentTransactions
       .filter((t) => t.type === 'income')
       .reduce((acc, t) => acc + t.value, 0);
-
     const expenses = recentTransactions
       .filter((t) => t.type === 'expense')
       .reduce((acc, t) => acc + t.value, 0);
-
     return (income - expenses) / 3;
   }, [transactions]);
-
   const handleEdit = (goal: any) => {
     setEditingGoal(goal);
     setShowGoalModal(true);
   };
-
   const handleCloseModal = () => {
     setEditingGoal(null);
     setShowGoalModal(false);
   };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1838,19 +2032,17 @@ function GoalsScreen() {
         <h3 className="text-2xl font-bold">Metas</h3>
         <button
           onClick={() => setShowGoalModal(true)}
-          className={`${themes[theme].primary} text-white px-4 py-2 rounded-xl font-semibold shadow-lg active:scale-95 transition-all`}
+          className="theme-primary text-white px-4 py-2 rounded-xl font-semibold shadow-lg active:scale-95 transition-all"
         >
           Nova Meta
         </button>
       </div>
-
       <div className="grid gap-4">
         {goals.map((goal, index) => {
           const progress = (goal.currentAmount / goal.targetAmount) * 100;
           const remaining = goal.targetAmount - goal.currentAmount;
           const monthsToGoal =
             monthlySavings > 0 ? Math.ceil(remaining / monthlySavings) : 0;
-
           return (
             <motion.div
               key={goal.id}
@@ -1880,7 +2072,6 @@ function GoalsScreen() {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-lg text-emerald-500">
                     {progress.toFixed(0)}%
@@ -1903,7 +2094,6 @@ function GoalsScreen() {
                   </button>
                 </div>
               </div>
-
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden mb-3">
                 <motion.div
                   initial={{ width: 0 }}
@@ -1912,7 +2102,6 @@ function GoalsScreen() {
                   className={`${themes[theme].primary} h-full`}
                 />
               </div>
-
               <div className="flex justify-between text-sm">
                 <span className="opacity-70">
                   Economizado: R${' '}
@@ -1930,7 +2119,6 @@ function GoalsScreen() {
             </motion.div>
           );
         })}
-
         {goals.length === 0 && (
           <div className="text-center py-12 opacity-50">
             <Target className="w-16 h-16 mx-auto mb-4" />
@@ -1939,7 +2127,6 @@ function GoalsScreen() {
           </div>
         )}
       </div>
-
       <GoalModal
         show={showGoalModal}
         onClose={handleCloseModal}
@@ -1950,12 +2137,10 @@ function GoalsScreen() {
     </motion.div>
   );
 }
-
 function SettingsScreen() {
   const { user, signOut } = useAuth();
   const { transactions, preferences, updatePreferences } = useFinance();
   const { theme, darkMode } = preferences;
-
   const exportData = () => {
     const data = JSON.stringify(transactions, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
@@ -1965,7 +2150,6 @@ function SettingsScreen() {
     a.download = `financas-pro-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
   };
-
   const exportCSV = () => {
     const headers = [
       'Data',
@@ -1985,7 +2169,6 @@ function SettingsScreen() {
       t.account,
       t.tags.join('; '),
     ]);
-
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1994,7 +2177,6 @@ function SettingsScreen() {
     a.download = `financas-pro-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -2003,7 +2185,6 @@ function SettingsScreen() {
       className="space-y-6"
     >
       <h3 className="text-2xl font-bold">Configurações</h3>
-
       {/* Appearance */}
       <div
         className={`${
@@ -2014,7 +2195,6 @@ function SettingsScreen() {
       >
         <div className="p-5 border-b border-gray-100 dark:border-gray-700">
           <p className="text-sm font-semibold opacity-50 mb-4">APARÊNCIA</p>
-
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium mb-3">Tema de Cor</p>
@@ -2032,7 +2212,6 @@ function SettingsScreen() {
                 ))}
               </div>
             </div>
-
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
                 {darkMode ? <Moon size={20} /> : <Sun size={20} />}
@@ -2052,11 +2231,9 @@ function SettingsScreen() {
             </div>
           </div>
         </div>
-
         {/* Export */}
         <div className="p-5 border-b border-gray-100 dark:border-gray-700">
           <p className="text-sm font-semibold opacity-50 mb-4">DADOS</p>
-
           <div className="space-y-2">
             <button
               onClick={exportData}
@@ -2069,7 +2246,6 @@ function SettingsScreen() {
                 <span className="font-medium text-sm">Exportar JSON</span>
               </div>
             </button>
-
             <button
               onClick={exportCSV}
               className="w-full flex items-center justify-between py-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl px-3 transition-colors"
@@ -2083,7 +2259,6 @@ function SettingsScreen() {
             </button>
           </div>
         </div>
-
         {/* Logout */}
         <div className="p-5">
           <button
@@ -2103,7 +2278,6 @@ function SettingsScreen() {
           </button>
         </div>
       </div>
-
       {/* User Info */}
       <div className="text-center opacity-30 text-xs space-y-1">
         <p>ID: {user?.id?.slice(0, 8)}...</p>
@@ -2114,20 +2288,17 @@ function SettingsScreen() {
     </motion.div>
   );
 }
-
 function MainApp() {
   const { preferences } = useFinance();
   const { theme, darkMode } = preferences;
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showAddModal, setShowAddModal] = useState(false);
-
   const tabs = [
     { id: 'dashboard', label: 'Início', icon: Wallet },
     { id: 'transactions', label: 'Extrato', icon: Calendar },
     { id: 'goals', label: 'Metas', icon: Target },
     { id: 'settings', label: 'Ajustes', icon: Settings },
   ];
-
   return (
     <div
       className={`min-h-screen ${
@@ -2136,9 +2307,9 @@ function MainApp() {
     >
       {/* Header */}
       <header
-        className={`sticky top-0 z-30 ${
+        className={`sticky top-0 z-10 ${
           darkMode ? 'bg-gray-800/80' : 'bg-white/80'
-        } backdrop-blur-xl p-5 flex justify-between items-center border-b ${
+        } backdrop-blur-sm p-5 flex justify-between items-center border-b ${
           darkMode ? 'border-gray-700' : 'border-gray-100'
         } rounded-b-3xl shadow-sm`}
       >
@@ -2156,7 +2327,6 @@ function MainApp() {
           </div>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="p-4 max-w-md mx-auto">
         <AnimatePresence mode="wait">
@@ -2166,21 +2336,19 @@ function MainApp() {
           {activeTab === 'settings' && <SettingsScreen key="settings" />}
         </AnimatePresence>
       </main>
-
       {/* Floating Action Button */}
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => setShowAddModal(true)}
-        className={`fixed bottom-24 right-6 w-16 h-16 rounded-full ${themes[theme].primary} text-white shadow-2xl flex items-center justify-center z-40 will-change-transform`}
+        className="fixed bottom-24 right-6 w-16 h-16 rounded-full theme-primary text-white shadow-2xl flex items-center justify-center z-40 will-change-transform"
       >
         <Plus size={28} />
       </motion.button>
-
       {/* Bottom Navigation */}
       <nav
         className={`fixed bottom-0 left-0 right-0 ${
           darkMode ? 'bg-gray-800/80' : 'bg-white/80'
-        } backdrop-blur-xl border-t ${
+        } backdrop-blur-sm border-t ${
           darkMode ? 'border-gray-700' : 'border-gray-100'
         } px-6 py-3 flex justify-between items-center z-50 rounded-t-[2.5rem] shadow-lg`}
       >
@@ -2199,7 +2367,6 @@ function MainApp() {
           </button>
         ))}
       </nav>
-
       {/* Transaction Modal */}
       <TransactionModal
         show={showAddModal}
@@ -2210,10 +2377,8 @@ function MainApp() {
     </div>
   );
 }
-
 function AppContent() {
   const { user, loading } = useAuth();
-
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50">
@@ -2224,18 +2389,15 @@ function AppContent() {
       </div>
     );
   }
-
   if (!user) {
     return <AuthScreen />;
   }
-
   return (
     <FinanceProvider>
       <MainApp />
     </FinanceProvider>
   );
 }
-
 export default function App() {
   return (
     <AuthProvider>
