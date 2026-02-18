@@ -1,0 +1,17 @@
+{
+  "name": "Finanças Pro",
+  "short_name": "Finanças Pro",
+  "description": "Aplicação completa de organização financeira pessoal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
