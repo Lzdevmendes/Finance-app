@@ -23,7 +23,7 @@ export const OptimizedButton: React.FC<OptimizedButtonProps> = ({
 }) => {
   const handleClick = useClickPrevention(onClick || (() => {}), 1000);
 
-  const baseClasses = 'relative font-bold rounded-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed overflow-hidden';
+  const baseClasses = 'relative font-bold rounded-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed overflow-hidden text-current';
 
   const variantClasses = {
     primary: 'bg-emerald-600 hover:bg-emerald-700 text-white focus:ring-emerald-500 shadow-lg hover:shadow-xl',
@@ -56,7 +56,7 @@ export const OptimizedButton: React.FC<OptimizedButtonProps> = ({
         </div>
       )}
 
-      <span className={loading ? 'opacity-0' : 'opacity-100'}>
+      <span className={`${loading ? 'opacity-0' : 'opacity-100'} text-current`}>
         {children}
       </span>
     </motion.button>

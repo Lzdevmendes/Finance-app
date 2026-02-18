@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import {
   Plus,
   ArrowUpCircle,
@@ -49,27 +49,83 @@ import {
   Area,
   AreaChart,
 } from 'recharts';
-
-// Imports organizados
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { FinanceProvider, useFinance } from './contexts/FinanceContext';
 import { CategoryIcon } from './components/CategoryIcon';
 import { TagInput } from './components/TagInput';
-import { OptimizedButton } from './components/ui/OptimizedButton';
-import { OptimizedScroll, useSmoothScroll } from './components/ui/OptimizedScroll';
-import { useFinanceLogic } from './hooks/useFinanceLogic';
-import { useClickPrevention } from './hooks/useClickPrevention';
-import {
-  TransactionType,
-  AccountType,
-  CategoryType,
-  Transaction,
-  Goal,
-  UserPreferences
-} from './types';
-import { CATEGORIES, THEMES, CHART_COLORS, ANIMATION_VARIANTS, TRANSITION_CONFIG } from './constants';
-
 import CurrencyInput from 'react-currency-input-field';
+
+// Enhanced Theme configuration with gradients and better colors
+const themes = {
+  emerald: {
+    primary: 'bg-emerald-600',
+    primaryHover: 'bg-emerald-700',
+    text: 'text-emerald-600',
+    border: 'border-emerald-600',
+    light: 'bg-emerald-50',
+    gradient: 'from-emerald-500 to-emerald-600',
+    bgGradient: 'from-emerald-50 to-green-50',
+    accent: 'bg-emerald-100',
+    shadow: 'shadow-emerald-100',
+  },
+  blue: {
+    primary: 'bg-blue-600',
+    primaryHover: 'bg-blue-700',
+    text: 'text-blue-600',
+    border: 'border-blue-600',
+    light: 'bg-blue-50',
+    gradient: 'from-blue-500 to-blue-600',
+    bgGradient: 'from-blue-50 to-indigo-50',
+    accent: 'bg-blue-100',
+    shadow: 'shadow-blue-100',
+  },
+  purple: {
+    primary: 'bg-purple-600',
+    primaryHover: 'bg-purple-700',
+    text: 'text-purple-600',
+    border: 'border-purple-600',
+    light: 'bg-purple-50',
+    gradient: 'from-purple-500 to-purple-600',
+    bgGradient: 'from-purple-50 to-violet-50',
+    accent: 'bg-purple-100',
+    shadow: 'shadow-purple-100',
+  },
+  rose: {
+    primary: 'bg-rose-600',
+    primaryHover: 'bg-rose-700',
+    text: 'text-rose-600',
+    border: 'border-rose-600',
+    light: 'bg-rose-50',
+    gradient: 'from-rose-500 to-rose-600',
+    bgGradient: 'from-rose-50 to-pink-50',
+    accent: 'bg-rose-100',
+    shadow: 'shadow-rose-100',
+  },
+};
+
+const categories = [
+  { value: 'alimentacao', label: 'Alimentação', icon: '🍽️' },
+  { value: 'lazer', label: 'Lazer', icon: '🎉' },
+  { value: 'transporte', label: 'Transporte', icon: '🚗' },
+  { value: 'casa', label: 'Casa', icon: '🏠' },
+  { value: 'saude', label: 'Saúde', icon: '🏥' },
+  { value: 'pessoal', label: 'Pessoal', icon: '👤' },
+  { value: 'educacao', label: 'Educação', icon: '📚' },
+  { value: 'compras', label: 'Compras', icon: '🛒' },
+  { value: 'viagem', label: 'Viagem', icon: '✈️' },
+  { value: 'tecnologia', label: 'Tecnologia', icon: '💻' },
+  { value: 'investimentos', label: 'Investimentos', icon: '📈' },
+  { value: 'salario', label: 'Salário', icon: '💰' },
+  { value: 'freelance', label: 'Freelance', icon: '💼' },
+  { value: 'bonus', label: 'Bônus', icon: '🎁' },
+  { value: 'dividendos', label: 'Dividendos', icon: '📊' },
+  { value: 'aluguel', label: 'Aluguel', icon: '🏢' },
+  { value: 'servicos', label: 'Serviços', icon: '🔧' },
+  { value: 'seguros', label: 'Seguros', icon: '🛡️' },
+  { value: 'impostos', label: 'Impostos', icon: '📋' },
+  { value: 'doacoes', label: 'Doações', icon: '❤️' },
+  { value: 'outros', label: 'Outros', icon: '📝' },
+];
 
 function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -185,36 +241,38 @@ function AuthScreen() {
           className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/10 p-8 border border-white/20"
         >
           <div className="flex gap-2 p-1 bg-gray-100/80 rounded-2xl mb-8">
-            <OptimizedButton
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 setIsLogin(true);
                 setError('');
                 setSuccess('');
               }}
-              variant={isLogin ? "default" : "ghost"}
-              className={`flex-1 py-3 rounded-xl font-semibold ${
+              className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 will-change-transform ${
                 isLogin
                   ? 'bg-white text-emerald-600 shadow-lg shadow-emerald-100'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               Entrar
-            </OptimizedButton>
-            <OptimizedButton
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 setIsLogin(false);
                 setError('');
                 setSuccess('');
               }}
-              variant={!isLogin ? "default" : "ghost"}
-              className={`flex-1 py-3 rounded-xl font-semibold ${
+              className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 will-change-transform ${
                 !isLogin
                   ? 'bg-white text-emerald-600 shadow-lg shadow-emerald-100'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               Criar Conta
-            </OptimizedButton>
+            </motion.button>
           </div>
 
           <motion.form
@@ -313,10 +371,12 @@ function AuthScreen() {
               )}
             </AnimatePresence>
 
-            <OptimizedButton
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               disabled={loading}
               type="submit"
-              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -329,7 +389,7 @@ function AuthScreen() {
                   {isLogin ? 'Entrar' : 'Criar Conta'}
                 </>
               )}
-            </OptimizedButton>
+            </motion.button>
           </motion.form>
         </motion.div>
 
@@ -369,29 +429,25 @@ function TransactionModal({
   theme: keyof typeof themes;
 }) {
   const { addTransaction, transactions } = useFinance();
-  const [type, setType] = useState<TransactionType>(TransactionType.EXPENSE);
+  const [type, setType] = useState<'income' | 'expense'>('expense');
   const [description, setDescription] = useState('');
   const [value, setValue] = useState('');
-  const [category, setCategory] = useState<CategoryType>(CategoryType.OTHER);
-  const [account, setAccount] = useState<AccountType>(AccountType.CHECKING);
+  const [category, setCategory] = useState('outros');
+  const [account, setAccount] = useState('principal');
   const [tags, setTags] = useState<string[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [recurringFrequency, setRecurringFrequency] = useState<'monthly' | 'weekly' | 'yearly'>('monthly');
 
   const resetForm = () => {
-    setType(TransactionType.EXPENSE);
+    setType('expense');
     setDescription('');
     setValue('');
-    setCategory(CategoryType.OTHER);
-    setAccount(AccountType.CHECKING);
+    setCategory('outros');
+    setAccount('principal');
     setTags([]);
     setDate(new Date().toISOString().split('T')[0]);
-    setIsRecurring(false);
-    setRecurringFrequency('monthly');
   };
 
   // Generate suggestions based on transaction history
@@ -424,23 +480,6 @@ function TransactionModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validação básica
-    if (!description.trim()) {
-      alert('Por favor, insira uma descrição para a transação.');
-      return;
-    }
-
-    if (!value || parseFloat(value) <= 0) {
-      alert('Por favor, insira um valor válido maior que zero.');
-      return;
-    }
-
-    if (!category) {
-      alert('Por favor, selecione uma categoria.');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -452,8 +491,6 @@ function TransactionModal({
         account,
         tags,
         date: new Date(date).toISOString(),
-        isRecurring,
-        recurringFrequency: isRecurring ? recurringFrequency : undefined,
       });
       resetForm();
       onClose();
@@ -468,79 +505,101 @@ function TransactionModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-end justify-center p-0">
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={onClose}
         />
 
         <motion.div
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
-          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+          initial={{ y: '100%', opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: '100%', opacity: 0, scale: 0.95 }}
+          transition={{
+            type: 'spring',
+            damping: 25,
+            stiffness: 200,
+            mass: 0.8,
+            opacity: { duration: 0.2 },
+            scale: { duration: 0.3 }
+          }}
           className={`${
-            darkMode
-              ? 'bg-gray-800/95 backdrop-blur-xl border-gray-700/50'
-              : 'bg-white/95 backdrop-blur-xl border-gray-100/50'
-          } w-full max-w-md rounded-t-[2.5rem] relative shadow-2xl max-h-[90vh] overflow-y-auto border-t`}
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          } w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[90vh] overflow-y-auto`}
         >
-          <div className="sticky top-0 bg-inherit p-6 pb-4 border-b border-gray-100/50 dark:border-gray-700/50 rounded-t-[2.5rem] backdrop-blur-xl">
-            {/* Bottom Sheet Handle */}
-            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-6"></div>
-
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="sticky top-0 bg-inherit p-6 pb-4 border-b border-gray-100 dark:border-gray-700 rounded-t-[3rem]"
+          >
+            <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4 sm:hidden" />
             <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-black">Novo Lançamento</h3>
-              <OptimizedButton
+              <motion.h3
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="text-xl font-bold"
+              >
+                Novo Lançamento
+              </motion.h3>
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.25, duration: 0.3 }}
                 onClick={onClose}
-                variant="ghost"
-                size="sm"
-                className={`p-3 rounded-2xl ${
-                  darkMode
-                    ? 'hover:bg-gray-700/50 text-gray-400'
-                    : 'hover:bg-gray-100 text-gray-600'
-                }`}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
               >
-                <X size={24} />
-              </OptimizedButton>
+                <X size={20} />
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div className="grid grid-cols-2 gap-4 p-2 bg-gray-100/50 dark:bg-gray-700/50 rounded-3xl backdrop-blur-sm">
-              <OptimizedButton
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            onSubmit={handleSubmit}
+            className="p-6 space-y-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="grid grid-cols-2 gap-3 p-1 bg-gray-100 dark:bg-gray-700 rounded-2xl"
+            >
+              <button
                 type="button"
-                onClick={() => setType(TransactionType.INCOME)}
-                variant={type === TransactionType.INCOME ? "default" : "ghost"}
-                className={`flex items-center justify-center gap-3 py-5 px-4 rounded-2xl font-bold text-base ${
-                  type === TransactionType.INCOME
-                    ? 'bg-white dark:bg-gray-600 text-emerald-600 dark:text-emerald-400 shadow-lg'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                onClick={() => setType('income')}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
+                  type === 'income'
+                    ? 'bg-white dark:bg-gray-600 text-emerald-600 shadow-sm'
+                    : 'text-gray-500'
                 }`}
               >
-                <ArrowUpCircle size={24} />
+                <ArrowUpCircle size={18} />
                 Receita
-              </OptimizedButton>
-              <OptimizedButton
+              </button>
+              <button
                 type="button"
-                onClick={() => setType(TransactionType.EXPENSE)}
-                variant={type === TransactionType.EXPENSE ? "default" : "ghost"}
-                className={`flex items-center justify-center gap-3 py-5 px-4 rounded-2xl font-bold text-base ${
-                  type === TransactionType.EXPENSE
-                    ? 'bg-white dark:bg-gray-600 text-rose-600 dark:text-rose-400 shadow-lg'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                onClick={() => setType('expense')}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
+                  type === 'expense'
+                    ? 'bg-white dark:bg-gray-600 text-rose-600 shadow-sm'
+                    : 'text-gray-500'
                 }`}
               >
-                <ArrowDownCircle size={24} />
+                <ArrowDownCircle size={18} />
                 Despesa
-              </OptimizedButton>
-            </div>
+              </button>
+            </motion.div>
 
             <div>
-              <label className="block text-sm font-bold mb-3 opacity-80">
+              <label className="block text-sm font-medium mb-2 opacity-70">
                 Descrição
               </label>
               <div className="relative">
@@ -548,42 +607,40 @@ function TransactionModal({
                   type="text"
                   value={description}
                   onChange={(e) => handleDescriptionChange(e.target.value)}
-                  placeholder={type === TransactionType.INCOME ? 'Ex: Salário, Freelance, Dividendos...' : 'Ex: Almoço, Transporte, Compras...'}
-                  className={`w-full p-5 rounded-2xl border text-base ${
+                  placeholder={type === 'income' ? 'Ex: Salário, Freelance, Dividendos...' : 'Ex: Almoço, Transporte, Compras...'}
+                  className={`w-full p-4 rounded-2xl border ${
                     darkMode
-                      ? 'bg-gray-800/50 border-gray-600 focus:border-emerald-400 backdrop-blur-sm'
-                      : 'bg-gray-50 border-gray-200 focus:border-emerald-500'
-                  } focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all duration-200`}
+                      ? 'bg-gray-800 border-gray-700 focus:border-gray-600'
+                      : 'bg-gray-50 border-gray-200 focus:border-gray-300'
+                  } focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all`}
                   required
-                  style={{ minHeight: '44px' }}
                 />
 
                 {/* Suggestions Dropdown */}
                 <AnimatePresence>
                   {showSuggestions && suggestions.length > 0 && (
                     <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
                       className={`absolute top-full left-0 right-0 mt-2 ${
-                        darkMode
-                          ? 'bg-gray-800/95 backdrop-blur-xl border-gray-700/50'
-                          : 'bg-white/95 backdrop-blur-xl border-gray-200'
-                      } border rounded-2xl shadow-2xl z-10 max-h-48 overflow-y-auto`}
+                        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                      } border rounded-2xl shadow-xl z-10 max-h-40 overflow-y-auto`}
                     >
                       {suggestions.map((suggestion, index) => (
-                        <OptimizedButton
+                        <button
                           key={index}
                           type="button"
                           onClick={() => selectSuggestion(suggestion)}
-                          variant="ghost"
-                          className={`w-full p-4 text-left hover:${
-                            darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
-                          } first:rounded-t-2xl last:rounded-b-2xl flex items-center gap-3`}
+                          className={`w-full p-3 text-left hover:${
+                            darkMode ? 'bg-gray-700' : 'bg-gray-50'
+                          } transition-colors first:rounded-t-2xl last:rounded-b-2xl`}
                         >
-                          <History size={18} className="opacity-60" />
-                          <span className="font-medium">{suggestion}</span>
-                        </OptimizedButton>
+                          <div className="flex items-center gap-2">
+                            <History size={16} className="opacity-50" />
+                            <span className="font-medium">{suggestion}</span>
+                          </div>
+                        </button>
                       ))}
                     </motion.div>
                   )}
@@ -592,23 +649,23 @@ function TransactionModal({
             </div>
 
             <div>
-              <label className="block text-sm font-bold mb-3 opacity-80">
-                Valor (€)
+              <label className="block text-sm font-medium mb-2 opacity-70">
+                Valor
               </label>
               <CurrencyInput
                 value={value}
                 onValueChange={(value) => setValue(value || '')}
-                placeholder="0,00"
+                prefix="R$ "
+                decimalsLimit={2}
                 decimalSeparator=","
                 groupSeparator="."
-                allowNegativeValue={false}
-                className={`w-full p-5 rounded-2xl border text-base font-mono ${
+                placeholder="R$ 0,00"
+                className={`w-full p-4 rounded-2xl border ${
                   darkMode
-                    ? 'bg-gray-800/50 border-gray-600 focus:border-emerald-400 backdrop-blur-sm'
-                    : 'bg-gray-50 border-gray-200 focus:border-emerald-500'
-                } focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all duration-200`}
-                style={{ minHeight: '44px' }}
-                inputMode="decimal"
+                    ? 'bg-gray-700 border-gray-600'
+                    : 'bg-gray-50 border-gray-100'
+                } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-2xl`}
+                required
               />
             </div>
 
@@ -625,7 +682,7 @@ function TransactionModal({
                     : 'bg-gray-50 border-gray-100'
                 } outline-none`}
               >
-                {CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <option key={cat.value} value={cat.value}>
                     {cat.label}
                   </option>
@@ -655,16 +712,16 @@ function TransactionModal({
               </label>
               <select
                 value={account}
-                onChange={(e) => setAccount(e.target.value as AccountType)}
+                onChange={(e) => setAccount(e.target.value)}
                 className={`w-full p-4 rounded-2xl border ${
                   darkMode
                     ? 'bg-gray-700 border-gray-600'
                     : 'bg-gray-50 border-gray-100'
                 } outline-none`}
               >
-                <option value={AccountType.CHECKING}>Conta Corrente</option>
-                <option value={AccountType.SAVINGS}>Poupança</option>
-                <option value={AccountType.CREDIT_CARD}>Cartão de Crédito</option>
+                <option value="principal">Conta Principal</option>
+                <option value="poupanca">Poupança</option>
+                <option value="cartao">Cartão de Crédito</option>
               </select>
             </div>
 
@@ -680,55 +737,14 @@ function TransactionModal({
               />
             </div>
 
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="isRecurring"
-                checked={isRecurring}
-                onChange={(e) => setIsRecurring(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="isRecurring" className="text-sm font-medium opacity-70">
-                É uma transação recorrente?
-              </label>
-            </div>
-
-            {isRecurring && (
-              <div>
-                <label className="block text-sm font-medium mb-2 opacity-70">
-                  Frequência
-                </label>
-                <select
-                  value={recurringFrequency}
-                  onChange={(e) => setRecurringFrequency(e.target.value as 'monthly' | 'weekly' | 'yearly')}
-                  className={`w-full p-4 rounded-2xl border ${
-                    darkMode
-                      ? 'bg-gray-700 border-gray-600'
-                      : 'bg-gray-50 border-gray-100'
-                  } outline-none`}
-                >
-                  <option value="monthly">Mensal</option>
-                  <option value="weekly">Semanal</option>
-                  <option value="yearly">Anual</option>
-                </select>
-              </div>
-            )}
-
-            <OptimizedButton
+            <button
               type="submit"
               disabled={loading}
-              className={`w-full py-5 ${THEMES[theme].primary} text-white rounded-2xl font-bold shadow-xl mt-8 text-lg`}
+              className={`w-full py-4 ${themes[theme].primary} text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all disabled:opacity-50`}
             >
-              {loading ? (
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Salvando...
-                </div>
-              ) : (
-                'Confirmar Lançamento'
-              )}
-            </OptimizedButton>
-          </form>
+              {loading ? 'Salvando...' : 'Confirmar Lançamento'}
+            </button>
+          </motion.form>
         </motion.div>
       </div>
     </AnimatePresence>
@@ -802,26 +818,49 @@ function GoalModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={onClose}
         />
 
         <motion.div
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
-          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+          initial={{ y: '100%', opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: '100%', opacity: 0, scale: 0.95 }}
+          transition={{
+            type: 'spring',
+            damping: 25,
+            stiffness: 200,
+            mass: 0.8,
+            opacity: { duration: 0.2 },
+            scale: { duration: 0.3 }
+          }}
           className={`${
             darkMode ? 'bg-gray-800' : 'bg-white'
-          } w-full max-w-md p-8 rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl`}
+          } w-full max-w-md p-8 rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[90vh] overflow-y-auto`}
         >
           <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6 sm:hidden" />
-          <h3 className="text-xl font-bold mb-6">
+          <motion.h3
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="text-xl font-bold mb-6"
+          >
             {editGoal ? 'Editar Meta' : 'Nova Meta'}
-          </h3>
+          </motion.h3>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+            >
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Nome da Meta
               </label>
@@ -837,20 +876,24 @@ function GoalModal({
                 } focus:ring-2 focus:ring-emerald-500 outline-none`}
                 required
               />
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Valor da Meta
               </label>
               <CurrencyInput
                 value={targetAmount}
                 onValueChange={(value) => setTargetAmount(value || '')}
-                prefix="€ "
+                prefix="R$ "
                 decimalsLimit={2}
                 decimalSeparator=","
                 groupSeparator="."
-                placeholder="€ 0,00"
+                placeholder="R$ 0,00"
                 className={`w-full p-4 rounded-2xl border ${
                   darkMode
                     ? 'bg-gray-700 border-gray-600'
@@ -858,36 +901,43 @@ function GoalModal({
                 } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl`}
                 required
               />
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
               <label className="block text-sm font-medium mb-2 opacity-70">
                 Valor Atual
               </label>
               <CurrencyInput
                 value={currentAmount}
                 onValueChange={(value) => setCurrentAmount(value || '')}
-                prefix="€ "
+                prefix="R$ "
                 decimalsLimit={2}
                 decimalSeparator=","
                 groupSeparator="."
-                placeholder="€ 0,00"
+                placeholder="R$ 0,00"
                 className={`w-full p-4 rounded-2xl border ${
                   darkMode
                     ? 'bg-gray-700 border-gray-600'
                     : 'bg-gray-50 border-gray-100'
                 } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl`}
               />
-            </div>
+            </motion.div>
 
-            <button
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
               type="submit"
               disabled={loading}
-              className={`w-full py-4 ${THEMES[theme].primary} text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all disabled:opacity-50`}
+              className={`w-full py-4 ${themes[theme].primary} text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all disabled:opacity-50`}
             >
               {loading ? 'Salvando...' : editGoal ? 'Atualizar Meta' : 'Criar Meta'}
-            </button>
-          </form>
+            </motion.button>
+          </motion.form>
         </motion.div>
       </div>
     </AnimatePresence>
@@ -972,48 +1022,36 @@ function Dashboard() {
       exit={{ opacity: 0 }}
       className="space-y-6"
     >
-      {/* Balance Card - Enhanced Hierarchy */}
+      {/* Balance Card */}
       <div
-        className={`bg-gradient-to-br ${THEMES[theme].gradient} p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden`}
+        className={`bg-gradient-to-br ${themes[theme].gradient} p-6 rounded-[2rem] text-white shadow-xl space-y-4`}
       >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-4 right-4 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
-          <div className="absolute bottom-4 left-4 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
+        <div>
+          <span className="text-sm opacity-90">Saldo do Mês</span>
+          <h3 className="text-4xl font-bold mt-1">
+            R$ {stats.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </h3>
         </div>
 
-        <div className="relative z-10">
-          <div className="mb-2">
-            <span className="text-sm opacity-90 font-medium">Saldo do Mês</span>
+        <div className="grid grid-cols-2 gap-4 pt-2">
+          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+            <div className="flex items-center gap-2 mb-2">
+              <ArrowUpCircle size={18} />
+              <span className="text-xs opacity-90">Receitas</span>
+            </div>
+            <span className="font-bold text-lg">
+              R$ {stats.income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
           </div>
-          <h3 className="text-5xl font-black mt-2 mb-6 leading-none tracking-tight">
-            € {stats.balance.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
-          </h3>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/15 backdrop-blur-md p-5 rounded-2xl border border-white/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <ArrowUpCircle size={20} className="text-white" />
-                </div>
-                <span className="text-sm opacity-90 font-medium">Receitas</span>
-              </div>
-              <span className="font-bold text-xl">
-                € {stats.income.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
-              </span>
+          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+            <div className="flex items-center gap-2 mb-2">
+              <ArrowDownCircle size={18} />
+              <span className="text-xs opacity-90">Despesas</span>
             </div>
-
-            <div className="bg-white/15 backdrop-blur-md p-5 rounded-2xl border border-white/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <ArrowDownCircle size={20} className="text-white" />
-                </div>
-                <span className="text-sm opacity-90 font-medium">Despesas</span>
-              </div>
-              <span className="font-bold text-xl">
-                € {stats.expenses.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
+            <span className="font-bold text-lg">
+              R$ {stats.expenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
           </div>
         </div>
       </div>
@@ -1022,22 +1060,15 @@ function Dashboard() {
       <div className="grid gap-4">
         {/* Pie Chart - Top Categories */}
         {chartData.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+          <div
             className={`${
-              darkMode
-                ? 'bg-gray-800/60 backdrop-blur-xl border-gray-700/50'
-                : 'bg-white'
-            } p-6 rounded-3xl shadow-lg border ${
-              darkMode ? 'border-gray-700/50' : 'border-gray-100'
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-5 rounded-3xl shadow-sm border ${
+              darkMode ? 'border-gray-700' : 'border-gray-100'
             }`}
           >
-            <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
-              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                <PieChartIcon size={20} className="text-emerald-600 dark:text-emerald-400" />
-              </div>
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <PieChartIcon size={18} />
               Principais Despesas
             </h4>
             <div className="h-64">
@@ -1059,33 +1090,26 @@ function Dashboard() {
                   </Pie>
                   <Tooltip
                     formatter={(value: number) =>
-                      `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
+                      `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                     }
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Monthly Trend Chart */}
         {monthlyData.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+          <div
             className={`${
-              darkMode
-                ? 'bg-gray-800/60 backdrop-blur-xl border-gray-700/50'
-                : 'bg-white'
-            } p-6 rounded-3xl shadow-lg border ${
-              darkMode ? 'border-gray-700/50' : 'border-gray-100'
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-5 rounded-3xl shadow-sm border ${
+              darkMode ? 'border-gray-700' : 'border-gray-100'
             }`}
           >
-            <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                <TrendingUp size={20} className="text-blue-600 dark:text-blue-400" />
-              </div>
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <TrendingUp size={18} />
               Evolução Mensal
             </h4>
             <div className="h-64">
@@ -1114,7 +1138,7 @@ function Dashboard() {
                   />
                   <Tooltip
                     formatter={(value: number) =>
-                      `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
+                      `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                     }
                     contentStyle={{
                       backgroundColor: darkMode ? '#374151' : '#ffffff',
@@ -1142,27 +1166,20 @@ function Dashboard() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Income vs Expenses Comparison */}
         {monthlyData.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+          <div
             className={`${
-              darkMode
-                ? 'bg-gray-800/60 backdrop-blur-xl border-gray-700/50'
-                : 'bg-white'
-            } p-6 rounded-3xl shadow-lg border ${
-              darkMode ? 'border-gray-700/50' : 'border-gray-100'
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-5 rounded-3xl shadow-sm border ${
+              darkMode ? 'border-gray-700' : 'border-gray-100'
             }`}
           >
-            <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                <BarChart3 size={20} className="text-purple-600 dark:text-purple-400" />
-              </div>
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <BarChart3 size={18} />
               Receitas vs Despesas
             </h4>
             <div className="h-64">
@@ -1181,7 +1198,7 @@ function Dashboard() {
                   />
                   <Tooltip
                     formatter={(value: number) =>
-                      `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
+                      `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                     }
                     contentStyle={{
                       backgroundColor: darkMode ? '#374151' : '#ffffff',
@@ -1203,21 +1220,14 @@ function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
-      {/* Recent Transactions - Enhanced */}
-      <div className="space-y-4">
+      {/* Recent Transactions */}
+      <div className="space-y-3">
         <div className="flex justify-between items-center px-1">
-          <h4 className="font-bold text-xl">Transações Recentes</h4>
-          <OptimizedButton
-            onClick={() => setActiveTab('transactions')}
-            variant="ghost"
-            className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
-          >
-            Ver todas →
-          </OptimizedButton>
+          <h4 className="font-bold">Transações Recentes</h4>
         </div>
 
         {transactions.slice(0, 5).map((t, index) => (
@@ -1225,78 +1235,47 @@ function Dashboard() {
             key={t.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02, x: 4 }}
+            transition={{ delay: index * 0.1, duration: 0.4 }}
             className={`${
-              darkMode
-                ? 'bg-gray-800/60 backdrop-blur-xl border-gray-700/50 hover:bg-gray-800/80'
-                : 'bg-white hover:bg-gray-50'
-            } p-5 rounded-2xl shadow-sm border ${
-              darkMode ? 'border-gray-700/50' : 'border-gray-100'
-            } transition-all duration-200 cursor-pointer group`}
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-4 rounded-2xl flex items-center justify-between shadow-sm border will-change-transform ${
+              darkMode ? 'border-gray-700' : 'border-gray-100'
+            }`}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div
-                  className={`p-3 rounded-xl transition-all group-hover:scale-110 ${
-                    t.type === 'income'
-                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
-                  }`}
-                >
-                  <CategoryIcon category={t.category} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-base mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                    {t.description}
-                  </p>
-                  <p className="text-sm opacity-60">
-                    {categories.find((c) => c.value === t.category)?.label} •{' '}
-                    {new Date(t.date).toLocaleDateString('pt-PT')}
-                  </p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div
+                className={`p-3 rounded-xl ${
+                  t.type === 'income'
+                    ? 'bg-emerald-100 text-emerald-600'
+                    : 'bg-rose-100 text-rose-600'
+                }`}
+              >
+                <CategoryIcon category={t.category} />
               </div>
-              <div className="text-right">
-                <span
-                  className={`font-bold text-lg ${
-                    t.type === 'income'
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-rose-600 dark:text-rose-400'
-                  }`}
-                >
-                  {t.type === 'income' ? '+' : '-'} €
-                  {t.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
-                </span>
+              <div>
+                <p className="font-bold text-sm">{t.description}</p>
+                <p className="text-xs opacity-50">
+                  {categories.find((c) => c.value === t.category)?.label} •{' '}
+                  {new Date(t.date).toLocaleDateString('pt-PT')}
+                </p>
               </div>
             </div>
+            <span
+              className={`font-bold ${
+                t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
+              }`}
+            >
+              {t.type === 'income' ? '+' : '-'} R$
+              {t.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
           </motion.div>
         ))}
 
         {transactions.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16 px-6"
-          >
-            <div className="mb-6">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-emerald-100 to-blue-100 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-full flex items-center justify-center">
-                <Wallet size={32} className="text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
-                Nenhuma transação ainda
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-                Comece a controlar suas finanças adicionando sua primeira transação. É rápido e fácil!
-              </p>
-            </div>
-            <OptimizedButton
-              onClick={() => document.querySelector('[data-add-transaction]')?.click()}
-              className={`inline-flex items-center gap-2 px-6 py-4 ${THEMES[theme].primary} text-white rounded-2xl font-bold shadow-lg hover:shadow-xl`}
-            >
-              <Plus size={20} />
-              Adicionar Transação
-            </OptimizedButton>
-          </motion.div>
+          <div className="text-center py-12 opacity-50">
+            <p>Nenhuma transação ainda</p>
+            <p className="text-sm">Clique no + para adicionar</p>
+          </div>
         )}
       </div>
     </motion.div>
@@ -1462,7 +1441,7 @@ function TransactionsScreen() {
                       onClick={() => setFilterType(type.value as any)}
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
                         filterType === type.value
-                          ? `${THEMES[theme].primary} text-white`
+                          ? `${themes[theme].primary} text-white`
                           : darkMode
                           ? 'bg-gray-700 border border-gray-600'
                           : 'bg-gray-100 border border-gray-200'
@@ -1558,7 +1537,7 @@ function TransactionsScreen() {
           onClick={() => setFilterType('all')}
           className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
             filterType === 'all'
-              ? `${THEMES[theme].primary} text-white`
+              ? `${themes[theme].primary} text-white`
               : darkMode
               ? 'bg-gray-800 border border-gray-700'
               : 'bg-white border border-gray-100'
@@ -1644,15 +1623,15 @@ function TransactionsScreen() {
                         t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
                       }`}
                     >
-                      {t.type === 'income' ? '+' : '-'} €
-                      {t.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
+                      {t.type === 'income' ? '+' : '-'} R$
+                      {t.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                     <span className="text-xs opacity-50">{t.account}</span>
                   </div>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleEditTransaction(t)}
-                    className="text-gray-400 hover:text-blue-500 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    className="text-gray-400 hover:text-blue-500 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 will-change-transform"
                   >
                     <Edit size={18} />
                   </button>
@@ -1662,7 +1641,7 @@ function TransactionsScreen() {
                         deleteTransaction(t.id);
                       }
                     }}
-                    className="text-gray-400 hover:text-rose-500 p-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                    className="text-gray-400 hover:text-rose-500 p-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all duration-200 will-change-transform"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -1723,7 +1702,7 @@ function TransactionsScreen() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Valor (€)</label>
+                  <label className="text-sm font-medium mb-2 block">Valor (R$)</label>
                   <CurrencyInput
                     value={editingTransaction.value}
                     onValueChange={(value) => setEditingTransaction(prev => ({ ...prev, value: value || 0 }))}
@@ -1789,19 +1768,20 @@ function TransactionsScreen() {
               </div>
 
               <div className="flex gap-3 mt-6">
-                <OptimizedButton
+                <button
                   onClick={() => setShowEditModal(false)}
-                  variant="outline"
-                  className="flex-1"
+                  className={`flex-1 py-3 rounded-xl font-semibold border ${
+                    darkMode ? 'border-gray-600' : 'border-gray-200'
+                  }`}
                 >
                   Cancelar
-                </OptimizedButton>
-                <OptimizedButton
+                </button>
+                <button
                   onClick={handleSaveEdit}
-                  className={`${THEMES[theme].primary} flex-1 text-white shadow-lg`}
+                  className={`${themes[theme].primary} flex-1 py-3 rounded-xl font-semibold text-white shadow-lg`}
                 >
                   Salvar
-                </OptimizedButton>
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -1858,14 +1838,14 @@ function GoalsScreen() {
         <h3 className="text-2xl font-bold">Metas</h3>
         <button
           onClick={() => setShowGoalModal(true)}
-          className={`${THEMES[theme].primary} text-white px-4 py-2 rounded-xl font-semibold shadow-lg active:scale-95 transition-all`}
+          className={`${themes[theme].primary} text-white px-4 py-2 rounded-xl font-semibold shadow-lg active:scale-95 transition-all`}
         >
           Nova Meta
         </button>
       </div>
 
       <div className="grid gap-4">
-        {goals.map((goal) => {
+        {goals.map((goal, index) => {
           const progress = (goal.currentAmount / goal.targetAmount) * 100;
           const remaining = goal.targetAmount - goal.currentAmount;
           const monthsToGoal =
@@ -1876,24 +1856,25 @@ function GoalsScreen() {
               key={goal.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
               className={`${
                 darkMode ? 'bg-gray-800' : 'bg-white'
-              } p-5 rounded-3xl border ${
+              } p-5 rounded-3xl border will-change-transform ${
                 darkMode ? 'border-gray-700' : 'border-gray-100'
               } shadow-sm`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3 flex-1">
                   <div
-                    className={`${THEMES[theme].light} ${THEMES[theme].text} p-3 rounded-2xl`}
+                    className={`${themes[theme].light} ${themes[theme].text} p-3 rounded-2xl`}
                   >
                     <Target size={24} />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-lg">{goal.name}</p>
                     <p className="text-sm opacity-50">
-                      Meta: €{' '}
-                      {goal.targetAmount.toLocaleString('pt-PT', {
+                      Meta: R${' '}
+                      {goal.targetAmount.toLocaleString('pt-BR', {
                         minimumFractionDigits: 2,
                       })}
                     </p>
@@ -1906,9 +1887,9 @@ function GoalsScreen() {
                   </span>
                   <button
                     onClick={() => handleEdit(goal)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 will-change-transform"
                   >
-                    <Edit size={18} />
+                    <Edit size={18} className="text-gray-600 dark:text-gray-300" />
                   </button>
                   <button
                     onClick={() => {
@@ -1916,7 +1897,7 @@ function GoalsScreen() {
                         deleteGoal(goal.id);
                       }
                     }}
-                    className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/20 rounded-lg transition-colors text-rose-500"
+                    className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/20 rounded-lg transition-all duration-200 will-change-transform text-rose-500"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -1928,14 +1909,14 @@ function GoalsScreen() {
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(progress, 100)}%` }}
                   transition={{ duration: 1, ease: 'easeOut' }}
-                  className={`${THEMES[theme].primary} h-full`}
+                  className={`${themes[theme].primary} h-full`}
                 />
               </div>
 
               <div className="flex justify-between text-sm">
                 <span className="opacity-70">
-                  Economizado: €{' '}
-                  {goal.currentAmount.toLocaleString('pt-PT', {
+                  Economizado: R${' '}
+                  {goal.currentAmount.toLocaleString('pt-BR', {
                     minimumFractionDigits: 2,
                   })}
                 </span>
@@ -2038,11 +2019,11 @@ function SettingsScreen() {
             <div>
               <p className="text-sm font-medium mb-3">Tema de Cor</p>
               <div className="flex gap-3">
-                {(Object.keys(THEMES) as Array<keyof typeof THEMES>).map((t) => (
+                {(Object.keys(themes) as Array<keyof typeof themes>).map((t) => (
                   <button
                     key={t}
                     onClick={() => updatePreferences({ theme: t })}
-                    className={`w-12 h-12 rounded-full ${THEMES[t].primary} border-4 ${
+                    className={`w-12 h-12 rounded-full ${themes[t].primary} border-4 ${
                       theme === t
                         ? 'border-white ring-2 ring-gray-300 dark:ring-gray-600'
                         : 'border-transparent'
@@ -2060,7 +2041,7 @@ function SettingsScreen() {
               <button
                 onClick={() => updatePreferences({ darkMode: !darkMode })}
                 className={`w-14 h-8 rounded-full transition-colors ${
-                  darkMode ? THEMES[theme].primary : 'bg-gray-200'
+                  darkMode ? themes[theme].primary : 'bg-gray-200'
                 } relative`}
               >
                 <motion.div
@@ -2083,7 +2064,7 @@ function SettingsScreen() {
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  <Download size={18} />
+                  <Download size={18} className="text-gray-600 dark:text-gray-300" />
                 </div>
                 <span className="font-medium text-sm">Exportar JSON</span>
               </div>
@@ -2095,7 +2076,7 @@ function SettingsScreen() {
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  <Download size={18} />
+                  <Download size={18} className="text-gray-600 dark:text-gray-300" />
                 </div>
                 <span className="font-medium text-sm">Exportar CSV</span>
               </div>
@@ -2140,9 +2121,6 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // Hook otimizado para scroll suave
-  useSmoothScroll();
-
   const tabs = [
     { id: 'dashboard', label: 'Início', icon: Wallet },
     { id: 'transactions', label: 'Extrato', icon: Calendar },
@@ -2150,61 +2128,33 @@ function MainApp() {
     { id: 'settings', label: 'Ajustes', icon: Settings },
   ];
 
-  // Callback otimizado para mudança de aba
-  const handleTabChange = useCallback((tabId: string) => {
-    setActiveTab(tabId);
-  }, []);
-
-  // Callback otimizado para abrir modal
-  const handleOpenModal = useCallback(() => {
-    setShowAddModal(true);
-  }, []);
-
-  // Callback otimizado para fechar modal
-  const handleCloseModal = useCallback(() => {
-    setShowAddModal(false);
-  }, []);
-
   return (
     <div
       className={`min-h-screen ${
         darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
       } pb-24 transition-colors duration-300`}
     >
-      {/* Header - Enhanced with Glassmorphism */}
+      {/* Header */}
       <header
         className={`sticky top-0 z-30 ${
-          darkMode
-            ? 'bg-gray-800/60 backdrop-blur-xl border-gray-700/50'
-            : 'bg-white/60 backdrop-blur-xl border-gray-100/50'
-        } p-6 flex justify-between items-center border-b rounded-b-3xl shadow-lg mx-4 mt-4 mb-2`}
+          darkMode ? 'bg-gray-800/80' : 'bg-white/80'
+        } backdrop-blur-xl p-5 flex justify-between items-center border-b ${
+          darkMode ? 'border-gray-700' : 'border-gray-100'
+        } rounded-b-3xl shadow-sm`}
       >
-        <div className="flex items-center gap-4">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className={`p-3 rounded-2xl ${THEMES[theme].primary} text-white shadow-lg`}
+        <div className="flex items-center gap-3">
+          <div
+            className={`p-2.5 rounded-xl ${themes[theme].primary} text-white shadow-lg`}
           >
-            <Wallet size={24} />
-          </motion.div>
+            <Wallet size={20} />
+          </div>
           <div>
-            <h2 className="font-black text-xl leading-tight">Finanças Pro</h2>
-            <p className="text-sm opacity-60 font-medium">
+            <h2 className="font-bold text-lg leading-tight">Finanças Pro</h2>
+            <p className="text-xs opacity-60">
               {tabs.find((t) => t.id === activeTab)?.label}
             </p>
           </div>
         </div>
-
-        <OptimizedButton
-          onClick={() => setActiveTab('settings')}
-          variant="ghost"
-          className={`p-3 rounded-2xl ${
-            darkMode
-              ? 'hover:bg-gray-700/50 text-gray-300'
-              : 'hover:bg-gray-100 text-gray-600'
-          }`}
-        >
-          <Settings size={20} />
-        </OptimizedButton>
       </header>
 
       {/* Main Content */}
@@ -2217,55 +2167,36 @@ function MainApp() {
         </AnimatePresence>
       </main>
 
-      {/* Floating Action Button - Enhanced */}
-      <motion.div
-        className="fixed bottom-24 right-6 z-40"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+      {/* Floating Action Button */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setShowAddModal(true)}
+        className={`fixed bottom-24 right-6 w-16 h-16 rounded-full ${themes[theme].primary} text-white shadow-2xl flex items-center justify-center z-40 will-change-transform`}
       >
-        <OptimizedButton
-          onClick={handleOpenModal}
-          className={`w-16 h-16 rounded-full ${THEMES[theme].primary} text-white shadow-2xl hover:shadow-3xl flex items-center justify-center`}
-        >
-          <motion.div
-            whileHover={{ rotate: 90 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Plus size={28} />
-          </motion.div>
-        </OptimizedButton>
-      </motion.div>
+        <Plus size={28} />
+      </motion.button>
 
-      {/* Bottom Navigation - Enhanced */}
+      {/* Bottom Navigation */}
       <nav
         className={`fixed bottom-0 left-0 right-0 ${
-          darkMode
-            ? 'bg-gray-800/80 backdrop-blur-xl border-gray-700/50'
-            : 'bg-white/80 backdrop-blur-xl border-gray-100'
-        } border-t px-6 py-4 flex justify-between items-center z-50 rounded-t-[2.5rem] shadow-2xl`}
+          darkMode ? 'bg-gray-800/80' : 'bg-white/80'
+        } backdrop-blur-xl border-t ${
+          darkMode ? 'border-gray-700' : 'border-gray-100'
+        } px-6 py-3 flex justify-between items-center z-50 rounded-t-[2.5rem] shadow-lg`}
       >
         {tabs.map((tab) => (
-          <OptimizedButton
+          <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            variant={activeTab === tab.id ? "default" : "ghost"}
-            className={`flex flex-col items-center gap-2 py-3 px-5 rounded-2xl min-h-[44px] ${
+            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all will-change-transform ${
               activeTab === tab.id
-                ? `${THEMES[theme].text} bg-${theme}-50 dark:bg-${theme}-900/20 shadow-lg`
-                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                ? `${themes[theme].text} bg-${theme}-50 dark:bg-${theme}-900/20`
+                : 'text-gray-400'
             }`}
           >
-            <motion.div
-              animate={{
-                scale: activeTab === tab.id ? 1.1 : 1,
-                color: activeTab === tab.id ? THEMES[theme].text : undefined
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <tab.icon size={24} />
-            </motion.div>
-            <span className="text-xs font-bold leading-tight">{tab.label}</span>
-          </OptimizedButton>
+            <tab.icon size={22} />
+            <span className="text-[10px] font-bold">{tab.label}</span>
+          </button>
         ))}
       </nav>
 
