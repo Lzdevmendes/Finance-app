@@ -49,6 +49,7 @@ interface FinanceContextType {
   preferences: Preferences;
   loading: boolean;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'userId' | 'createdAt'>) => Promise<void>;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   addGoal: (goal: Omit<Goal, 'id' | 'userId' | 'createdAt'>) => Promise<void>;
   updateGoal: (id: string, updates: Partial<Goal>) => Promise<void>;
@@ -109,6 +110,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
+    if (!user) return;
+    await updateDoc(doc(db, 'users', user.uid, 'transactions', id), updates);
+  };
+
   const deleteTransaction = async (id: string) => {
     if (!user) return;
     await deleteDoc(doc(db, 'users', user.uid, 'transactions', id));
@@ -152,6 +158,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         preferences,
         loading,
         addTransaction,
+        updateTransaction,
         deleteTransaction,
         addGoal,
         updateGoal,

@@ -103,17 +103,27 @@ const themes = {
 };
 
 const categories = [
-  { value: 'alimentacao', label: 'Alimentação' },
-  { value: 'lazer', label: 'Lazer' },
-  { value: 'transporte', label: 'Transporte' },
-  { value: 'casa', label: 'Casa' },
-  { value: 'saude', label: 'Saúde' },
-  { value: 'pessoal', label: 'Pessoal' },
-  { value: 'educacao', label: 'Educação' },
-  { value: 'compras', label: 'Compras' },
-  { value: 'viagem', label: 'Viagem' },
-  { value: 'tecnologia', label: 'Tecnologia' },
-  { value: 'outros', label: 'Outros' },
+  { value: 'alimentacao', label: 'Alimentação', icon: '🍽️' },
+  { value: 'lazer', label: 'Lazer', icon: '🎉' },
+  { value: 'transporte', label: 'Transporte', icon: '🚗' },
+  { value: 'casa', label: 'Casa', icon: '🏠' },
+  { value: 'saude', label: 'Saúde', icon: '🏥' },
+  { value: 'pessoal', label: 'Pessoal', icon: '👤' },
+  { value: 'educacao', label: 'Educação', icon: '📚' },
+  { value: 'compras', label: 'Compras', icon: '🛒' },
+  { value: 'viagem', label: 'Viagem', icon: '✈️' },
+  { value: 'tecnologia', label: 'Tecnologia', icon: '💻' },
+  { value: 'investimentos', label: 'Investimentos', icon: '📈' },
+  { value: 'salario', label: 'Salário', icon: '💰' },
+  { value: 'freelance', label: 'Freelance', icon: '💼' },
+  { value: 'bonus', label: 'Bônus', icon: '🎁' },
+  { value: 'dividendos', label: 'Dividendos', icon: '📊' },
+  { value: 'aluguel', label: 'Aluguel', icon: '🏢' },
+  { value: 'servicos', label: 'Serviços', icon: '🔧' },
+  { value: 'seguros', label: 'Seguros', icon: '🛡️' },
+  { value: 'impostos', label: 'Impostos', icon: '📋' },
+  { value: 'doacoes', label: 'Doações', icon: '❤️' },
+  { value: 'outros', label: 'Outros', icon: '📝' },
 ];
 
 function AuthScreen() {
@@ -915,78 +925,173 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Charts */}
-      {chartData.length > 0 && (
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800' : 'bg-white'
-          } p-5 rounded-3xl shadow-sm border ${
-            darkMode ? 'border-gray-700' : 'border-gray-100'
-          }`}
-        >
-          <h4 className="font-bold mb-4 flex items-center gap-2">
-            <PieChartIcon size={18} />
-            Principais Despesas
-          </h4>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={5}
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) =>
-                    `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
-                  }
-                />
-              </PieChart>
-            </ResponsiveContainer>
+      {/* Charts Grid */}
+      <div className="grid gap-4">
+        {/* Pie Chart - Top Categories */}
+        {chartData.length > 0 && (
+          <div
+            className={`${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-5 rounded-3xl shadow-sm border ${
+              darkMode ? 'border-gray-700' : 'border-gray-100'
+            }`}
+          >
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <PieChartIcon size={18} />
+              Principais Despesas
+            </h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={5}
+                    dataKey="value"
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) =>
+                      `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
+                    }
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Monthly Evolution */}
-      {monthlyData.length > 0 && (
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800' : 'bg-white'
-          } p-5 rounded-3xl shadow-sm border ${
-            darkMode ? 'border-gray-700' : 'border-gray-100'
-          }`}
-        >
-          <h4 className="font-bold mb-4 flex items-center gap-2">
-            <TrendingUp size={18} />
-            Evolução Mensal
-          </h4>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip
-                  formatter={(value: number) =>
-                    `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
-                  }
-                />
-                <Legend />
-                <Bar dataKey="receitas" fill="#10b981" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="despesas" fill="#f43f5e" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        {/* Monthly Trend Chart */}
+        {monthlyData.length > 0 && (
+          <div
+            className={`${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-5 rounded-3xl shadow-sm border ${
+              darkMode ? 'border-gray-700' : 'border-gray-100'
+            }`}
+          >
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <TrendingUp size={18} />
+              Evolução Mensal
+            </h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={monthlyData}>
+                  <defs>
+                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    formatter={(value: number) =>
+                      `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
+                    }
+                    contentStyle={{
+                      backgroundColor: darkMode ? '#374151' : '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="receitas"
+                    stroke="#10b981"
+                    fillOpacity={1}
+                    fill="url(#incomeGradient)"
+                    strokeWidth={3}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="despesas"
+                    stroke="#f43f5e"
+                    fillOpacity={1}
+                    fill="url(#expenseGradient)"
+                    strokeWidth={3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Income vs Expenses Comparison */}
+        {monthlyData.length > 0 && (
+          <div
+            className={`${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } p-5 rounded-3xl shadow-sm border ${
+              darkMode ? 'border-gray-700' : 'border-gray-100'
+            }`}
+          >
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <BarChart3 size={18} />
+              Receitas vs Despesas
+            </h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData} barCategoryGap="20%">
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    formatter={(value: number) =>
+                      `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
+                    }
+                    contentStyle={{
+                      backgroundColor: darkMode ? '#374151' : '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                    }}
+                  />
+                  <Bar
+                    dataKey="receitas"
+                    fill="#10b981"
+                    radius={[8, 8, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="despesas"
+                    fill="#f43f5e"
+                    radius={[8, 8, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Recent Transactions */}
       <div className="space-y-3">
@@ -1046,10 +1151,21 @@ function Dashboard() {
 }
 
 function TransactionsScreen() {
-  const { transactions, deleteTransaction, preferences } = useFinance();
+  const { transactions, deleteTransaction, updateTransaction, preferences } = useFinance();
   const { theme, darkMode } = preferences;
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterAccount, setFilterAccount] = useState('all');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [showFilters, setShowFilters] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const accounts = useMemo(() => {
+    const uniqueAccounts = [...new Set(transactions.map(t => t.account))];
+    return uniqueAccounts.filter(account => account && account.trim() !== '');
+  }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
@@ -1057,12 +1173,18 @@ function TransactionsScreen() {
         t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesFilter =
-        filterType === 'all' || t.type === filterType;
+      const matchesType = filterType === 'all' || t.type === filterType;
+      const matchesCategory = filterCategory === 'all' || t.category === filterCategory;
+      const matchesAccount = filterAccount === 'all' || t.account === filterAccount;
 
-      return matchesSearch && matchesFilter;
+      const transactionDate = new Date(t.date);
+      const matchesDateRange =
+        (!dateRange.start || transactionDate >= new Date(dateRange.start)) &&
+        (!dateRange.end || transactionDate <= new Date(dateRange.end));
+
+      return matchesSearch && matchesType && matchesCategory && matchesAccount && matchesDateRange;
     });
-  }, [transactions, searchTerm, filterType]);
+  }, [transactions, searchTerm, filterType, filterCategory, filterAccount, dateRange]);
 
   const groupedTransactions = useMemo(() => {
     const groups: Record<string, typeof transactions> = {};
@@ -1084,6 +1206,35 @@ function TransactionsScreen() {
     return groups;
   }, [filteredTransactions]);
 
+  const handleEditTransaction = (transaction: any) => {
+    setEditingTransaction(transaction);
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTransaction) return;
+
+    await updateTransaction(editingTransaction.id, {
+      description: editingTransaction.description,
+      value: editingTransaction.value,
+      category: editingTransaction.category,
+      tags: editingTransaction.tags,
+      account: editingTransaction.account,
+      date: editingTransaction.date,
+    });
+
+    setShowEditModal(false);
+    setEditingTransaction(null);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterType('all');
+    setFilterCategory('all');
+    setFilterAccount('all');
+    setDateRange({ start: '', end: '' });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1091,7 +1242,17 @@ function TransactionsScreen() {
       exit={{ opacity: 0 }}
       className="space-y-4"
     >
-      <h3 className="text-2xl font-bold">Extrato</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-bold">Extrato</h3>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`p-2 rounded-xl ${
+            darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+          } shadow-sm`}
+        >
+          <Filter size={20} className={showFilters ? 'text-emerald-500' : ''} />
+        </button>
+      </div>
 
       {/* Search */}
       <div className="relative">
@@ -1112,7 +1273,133 @@ function TransactionsScreen() {
         />
       </div>
 
-      {/* Filters */}
+      {/* Advanced Filters */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className={`p-4 rounded-2xl border ${
+              darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'
+            } space-y-4`}>
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold">Filtros Avançados</h4>
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-emerald-500 hover:text-emerald-600"
+                >
+                  Limpar
+                </button>
+              </div>
+
+              {/* Type Filter */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Tipo</label>
+                <div className="flex gap-2">
+                  {[
+                    { value: 'all', label: 'Todas' },
+                    { value: 'income', label: 'Receitas' },
+                    { value: 'expense', label: 'Despesas' },
+                  ].map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => setFilterType(type.value as any)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                        filterType === type.value
+                          ? `${themes[theme].primary} text-white`
+                          : darkMode
+                          ? 'bg-gray-700 border border-gray-600'
+                          : 'bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Categoria</label>
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className={`w-full p-2 rounded-xl border ${
+                    darkMode
+                      ? 'bg-gray-700 border-gray-600'
+                      : 'bg-white border-gray-200'
+                  } outline-none`}
+                >
+                  <option value="all">Todas as categorias</option>
+                  {categories.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.icon} {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Account Filter */}
+              {accounts.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Conta</label>
+                  <select
+                    value={filterAccount}
+                    onChange={(e) => setFilterAccount(e.target.value)}
+                    className={`w-full p-2 rounded-xl border ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600'
+                        : 'bg-white border-gray-200'
+                    } outline-none`}
+                  >
+                    <option value="all">Todas as contas</option>
+                    {accounts.map((account) => (
+                      <option key={account} value={account}>
+                        {account}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Date Range */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Data Inicial</label>
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    className={`w-full p-2 rounded-xl border ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600'
+                        : 'bg-white border-gray-200'
+                    } outline-none`}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Data Final</label>
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    className={`w-full p-2 rounded-xl border ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600'
+                        : 'bg-white border-gray-200'
+                    } outline-none`}
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Quick Filters */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         <button
           onClick={() => setFilterType('all')}
@@ -1209,6 +1496,13 @@ function TransactionsScreen() {
                     </span>
                     <span className="text-xs opacity-50">{t.account}</span>
                   </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleEditTransaction(t)}
+                    className="text-gray-400 hover:text-blue-500 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  >
+                    <Edit size={18} />
+                  </button>
                   <button
                     onClick={() => {
                       if (confirm('Deseja excluir esta transação?')) {
@@ -1219,6 +1513,7 @@ function TransactionsScreen() {
                   >
                     <Trash2 size={18} />
                   </button>
+                </div>
                 </div>
               </motion.div>
             ))}
@@ -1231,6 +1526,135 @@ function TransactionsScreen() {
           </div>
         )}
       </div>
+
+      {/* Edit Transaction Modal */}
+      <AnimatePresence>
+        {showEditModal && editingTransaction && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowEditModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className={`${
+                darkMode ? 'bg-gray-800' : 'bg-white'
+              } p-6 rounded-3xl w-full max-w-md`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold">Editar Transação</h3>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Descrição</label>
+                  <input
+                    type="text"
+                    value={editingTransaction.description}
+                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, description: e.target.value }))}
+                    className={`w-full p-3 rounded-xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
+                    } outline-none focus:ring-2 focus:ring-emerald-500`}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Valor (€)</label>
+                  <CurrencyInput
+                    value={editingTransaction.value}
+                    onValueChange={(value) => setEditingTransaction(prev => ({ ...prev, value: value || 0 }))}
+                    className={`w-full p-3 rounded-xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
+                    } outline-none focus:ring-2 focus:ring-emerald-500`}
+                    placeholder="0,00"
+                    decimalsLimit={2}
+                    decimalSeparator=","
+                    groupSeparator="."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Categoria</label>
+                  <select
+                    value={editingTransaction.category}
+                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, category: e.target.value }))}
+                    className={`w-full p-3 rounded-xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
+                    } outline-none focus:ring-2 focus:ring-emerald-500`}
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.icon} {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Conta</label>
+                  <input
+                    type="text"
+                    value={editingTransaction.account}
+                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, account: e.target.value }))}
+                    className={`w-full p-3 rounded-xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
+                    } outline-none focus:ring-2 focus:ring-emerald-500`}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Data</label>
+                  <input
+                    type="date"
+                    value={editingTransaction.date}
+                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, date: e.target.value }))}
+                    className={`w-full p-3 rounded-xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
+                    } outline-none focus:ring-2 focus:ring-emerald-500`}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Tags</label>
+                  <TagInput
+                    tags={editingTransaction.tags}
+                    onChange={(tags) => setEditingTransaction(prev => ({ ...prev, tags }))}
+                    placeholder="Adicionar tags..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className={`flex-1 py-3 rounded-xl font-semibold border ${
+                    darkMode ? 'border-gray-600' : 'border-gray-200'
+                  }`}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className={`${themes[theme].primary} flex-1 py-3 rounded-xl font-semibold text-white shadow-lg`}
+                >
+                  Salvar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
