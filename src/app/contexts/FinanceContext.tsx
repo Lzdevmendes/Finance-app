@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { db } from './AuthContext'; // Import db from AuthContext
+import { db } from '../config/firebase';
+import { Transaction, Goal, UserPreferences } from '../types';
 import {
   collection,
   doc,
@@ -14,39 +15,10 @@ import {
   orderBy,
 } from 'firebase/firestore';
 
-interface Transaction {
-  id: string;
-  userId: string;
-  description: string;
-  value: number;
-  type: 'income' | 'expense';
-  category: string;
-  tags: string[];
-  account: string;
-  date: string;
-  createdAt: string;
-}
-
-interface Goal {
-  id: string;
-  userId: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  icon: string;
-  color: string;
-  createdAt: string;
-}
-
-interface Preferences {
-  theme: 'emerald' | 'blue' | 'purple' | 'rose';
-  darkMode: boolean;
-}
-
 interface FinanceContextType {
   transactions: Transaction[];
   goals: Goal[];
-  preferences: Preferences;
+  preferences: UserPreferences;
   loading: boolean;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'userId' | 'createdAt'>) => Promise<void>;
   updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
@@ -54,7 +26,7 @@ interface FinanceContextType {
   addGoal: (goal: Omit<Goal, 'id' | 'userId' | 'createdAt'>) => Promise<void>;
   updateGoal: (id: string, updates: Partial<Goal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
-  updatePreferences: (preferences: Partial<Preferences>) => Promise<void>;
+  updatePreferences: (preferences: Partial<UserPreferences>) => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -64,7 +36,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [preferences, setPreferences] = useState<Preferences>({ theme: 'emerald', darkMode: false });
+  const [preferences, setPreferences] = useState<UserPreferences>({ theme: 'emerald', darkMode: false });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -92,7 +64,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     const unsubPrefs = onSnapshot(prefsRef, (snapshot) => {
       if (snapshot.exists()) {
-        const prefsData = snapshot.data() as Preferences;
+        const prefsData = snapshot.data() as UserPreferences;
         setPreferences(prefsData);
         // Save to localStorage for immediate theme application
         localStorage.setItem('finance-app-preferences', JSON.stringify(prefsData));

@@ -1,26 +1,22 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import {
   Plus,
   ArrowUpCircle,
   ArrowDownCircle,
   Wallet,
-  PieChart as PieChartIcon,
   Target,
   Settings,
   LogOut,
   Trash2,
-  Search,
   Filter,
   Sun,
   Moon,
   Download,
   Edit,
-  TrendingUp,
   Calendar,
   X,
-  ChevronLeft,
   ChevronRight,
   Eye,
   EyeOff,
@@ -32,30 +28,14 @@ import {
   Zap,
   Shield,
   Users,
-  BarChart3,
 } from 'lucide-react';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  BarChart,
-  Bar,
-  Area,
-  AreaChart,
-  CartesianGrid,
-} from 'recharts';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { FinanceProvider, useFinance } from './contexts/FinanceContext';
 import { CategoryIcon } from './components/CategoryIcon';
 import { TagInput } from './components/TagInput';
+import { Dashboard } from './screens/Dashboard';
 import CurrencyInput from 'react-currency-input-field';
+import { TransactionType, CategoryType, AccountType, Transaction } from './types';
 // Enhanced Theme configuration with gradients and better colors
 const themes = {
   emerald: {
@@ -104,27 +84,27 @@ const themes = {
   },
 };
 const categories = [
-  { value: 'alimentacao', label: 'Alimentação', icon: '🍽️' },
-  { value: 'lazer', label: 'Lazer', icon: '🎉' },
-  { value: 'transporte', label: 'Transporte', icon: '🚗' },
-  { value: 'casa', label: 'Casa', icon: '🏠' },
-  { value: 'saude', label: 'Saúde', icon: '🏥' },
-  { value: 'pessoal', label: 'Pessoal', icon: '👤' },
-  { value: 'educacao', label: 'Educação', icon: '📚' },
-  { value: 'compras', label: 'Compras', icon: '🛒' },
-  { value: 'viagem', label: 'Viagem', icon: '✈️' },
-  { value: 'tecnologia', label: 'Tecnologia', icon: '💻' },
-  { value: 'investimentos', label: 'Investimentos', icon: '📈' },
-  { value: 'salario', label: 'Salário', icon: '💰' },
-  { value: 'freelance', label: 'Freelance', icon: '💼' },
-  { value: 'bonus', label: 'Bônus', icon: '🎁' },
-  { value: 'dividendos', label: 'Dividendos', icon: '📊' },
-  { value: 'aluguel', label: 'Aluguel', icon: '🏢' },
-  { value: 'servicos', label: 'Serviços', icon: '🔧' },
-  { value: 'seguros', label: 'Seguros', icon: '🛡️' },
-  { value: 'impostos', label: 'Impostos', icon: '📋' },
-  { value: 'doacoes', label: 'Doações', icon: '❤️' },
-  { value: 'outros', label: 'Outros', icon: '📝' },
+  { value: CategoryType.FOOD, label: 'Alimentação', icon: '🍽️' },
+  { value: CategoryType.LEISURE, label: 'Lazer', icon: '🎉' },
+  { value: CategoryType.TRANSPORT, label: 'Transporte', icon: '🚗' },
+  { value: CategoryType.HOME, label: 'Casa', icon: '🏠' },
+  { value: CategoryType.HEALTH, label: 'Saúde', icon: '🏥' },
+  { value: CategoryType.PERSONAL, label: 'Pessoal', icon: '👤' },
+  { value: CategoryType.EDUCATION, label: 'Educação', icon: '📚' },
+  { value: CategoryType.SHOPPING, label: 'Compras', icon: '🛒' },
+  { value: CategoryType.TRAVEL, label: 'Viagem', icon: '✈️' },
+  { value: CategoryType.TECHNOLOGY, label: 'Tecnologia', icon: '💻' },
+  { value: CategoryType.INVESTMENTS, label: 'Investimentos', icon: '📈' },
+  { value: CategoryType.SALARY, label: 'Salário', icon: '💰' },
+  { value: CategoryType.FREELANCE, label: 'Freelance', icon: '💼' },
+  { value: CategoryType.BONUS, label: 'Bônus', icon: '🎁' },
+  { value: CategoryType.DIVIDENDS, label: 'Dividendos', icon: '📊' },
+  { value: CategoryType.RENT, label: 'Aluguel', icon: '🏢' },
+  { value: CategoryType.SERVICES, label: 'Serviços', icon: '🔧' },
+  { value: CategoryType.INSURANCE, label: 'Seguros', icon: '🛡️' },
+  { value: CategoryType.TAXES, label: 'Impostos', icon: '📋' },
+  { value: CategoryType.DONATIONS, label: 'Doações', icon: '❤️' },
+  { value: CategoryType.OTHER, label: 'Outros', icon: '📝' },
 ];
 function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -156,12 +136,7 @@ function AuthScreen() {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
       opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut",
-        staggerChildren: 0.1
-      }
+      scale: 1
     }
   };
   const itemVariants = {
@@ -404,65 +379,102 @@ function TransactionModal({
   show,
   onClose,
   darkMode,
-  theme,
 }: {
   show: boolean;
   onClose: () => void;
   darkMode: boolean;
-  theme: keyof typeof themes;
 }) {
   const { addTransaction, transactions } = useFinance();
-  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [type, setType] = useState<TransactionType>(TransactionType.EXPENSE);
   const [description, setDescription] = useState('');
   const [value, setValue] = useState('');
-  const [category, setCategory] = useState('outros');
-  const [account, setAccount] = useState('principal');
+  const [category, setCategory] = useState<CategoryType>(CategoryType.OTHER);
+  const [account, setAccount] = useState<AccountType>(AccountType.CHECKING);
   const [tags, setTags] = useState<string[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const resetForm = () => {
-    setType('expense');
-    setDescription('');
-    setValue('');
-    setCategory('outros');
-    setAccount('principal');
-    setTags([]);
-    setDate(new Date().toISOString().split('T')[0]);
-  };
-  // Generate suggestions based on transaction history
-  const generateSuggestions = useMemo(() => {
-    const history = transactions
-      .filter(t => t.type === type)
-      .map(t => t.description)
-      .filter((desc, index, arr) => arr.indexOf(desc) === index) // Remove duplicates
-      .slice(0, 5); // Limit to 5 suggestions
-    return history;
-  }, [transactions, type]);
+  const [error, setError] = useState<string | null>(null);
+
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
-    if (value.length > 0) {
-      const filtered = generateSuggestions.filter(s =>
-        s.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions(filtered);
-      setShowSuggestions(filtered.length > 0);
+    setError(null);
+
+    if (value.length > 2) {
+      // Generate suggestions based on existing transactions
+      const existingDescriptions = transactions
+        .filter(t => t.type === type && t.description.toLowerCase().includes(value.toLowerCase()))
+        .map(t => t.description)
+        .filter((desc, index, arr) => arr.indexOf(desc) === index) // Remove duplicates
+        .slice(0, 5); // Limit to 5 suggestions
+
+      setSuggestions(existingDescriptions);
+      setShowSuggestions(existingDescriptions.length > 0);
     } else {
       setShowSuggestions(false);
+      setSuggestions([]);
     }
   };
+
   const selectSuggestion = (suggestion: string) => {
     setDescription(suggestion);
     setShowSuggestions(false);
+    setSuggestions([]);
   };
+
+  const validateForm = () => {
+    if (!description.trim()) {
+      setError('Descrição é obrigatória');
+      return false;
+    }
+
+    if (!value.trim() || parseFloat(value) <= 0) {
+      setError('Valor deve ser maior que zero');
+      return false;
+    }
+
+    if (!date) {
+      setError('Data é obrigatória');
+      return false;
+    }
+
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+
+    if (selectedDate > today) {
+      setError('Data não pode ser no futuro');
+      return false;
+    }
+
+    return true;
+  };
+
+  const resetForm = () => {
+    setType(TransactionType.EXPENSE);
+    setDescription('');
+    setValue('');
+    setCategory(CategoryType.OTHER);
+    setAccount(AccountType.CHECKING);
+    setTags([]);
+    setDate(new Date().toISOString().split('T')[0]);
+    setError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
     try {
       await addTransaction({
-        description,
-        value: parseFloat(value || '0'),
+        description: description.trim(),
+        value: parseFloat(value),
         type,
         category,
         account,
@@ -471,8 +483,9 @@ function TransactionModal({
       });
       resetForm();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding transaction:', error);
+      setError(error.message || 'Erro ao adicionar transação. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -544,6 +557,11 @@ function TransactionModal({
 
           {/* Conteúdo com scroll */}
           <div className="overflow-y-auto max-h-[calc(80vh-120px)]">
+            {error && (
+              <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+              </div>
+            )}
             <motion.form
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -559,7 +577,7 @@ function TransactionModal({
             >
               <button
                 type="button"
-                onClick={() => setType('income')}
+                onClick={() => setType(TransactionType.INCOME)}
                 className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
                   type === 'income'
                     ? 'bg-white dark:bg-gray-600 text-emerald-600 shadow-sm'
@@ -571,7 +589,7 @@ function TransactionModal({
               </button>
               <button
                 type="button"
-                onClick={() => setType('expense')}
+                onClick={() => setType(TransactionType.EXPENSE)}
                 className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
                   type === 'expense'
                     ? 'bg-white dark:bg-gray-600 text-rose-600 shadow-sm'
@@ -656,7 +674,7 @@ function TransactionModal({
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => setCategory(e.target.value as CategoryType)}
                 className={`w-full p-4 rounded-2xl border ${
                   darkMode
                     ? 'bg-gray-700 border-gray-600'
@@ -691,16 +709,16 @@ function TransactionModal({
               </label>
               <select
                 value={account}
-                onChange={(e) => setAccount(e.target.value)}
+                onChange={(e) => setAccount(e.target.value as AccountType)}
                 className={`w-full p-4 rounded-2xl border ${
                   darkMode
                     ? 'bg-gray-700 border-gray-600'
                     : 'bg-gray-50 border-gray-100'
                 } outline-none`}
               >
-                <option value="principal">Conta Principal</option>
-                <option value="poupanca">Poupança</option>
-                <option value="cartao">Cartão de Crédito</option>
+                <option value={AccountType.CHECKING}>Conta Corrente</option>
+                <option value={AccountType.SAVINGS}>Conta Poupança</option>
+                <option value={AccountType.CREDIT_CARD}>Cartão de Crédito</option>
               </select>
             </div>
             <div>
@@ -927,645 +945,6 @@ function GoalModal({
     </AnimatePresence>
   );
 }
-function Dashboard() {
-  const { transactions, preferences } = useFinance();
-  const { theme, darkMode } = preferences;
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const now = new Date();
-    return now.getMonth() + 1;
-  });
-  const [selectedYear, setSelectedYear] = useState(() => {
-    const now = new Date();
-    return now.getFullYear();
-  });
-  const stats = useMemo(() => {
-    const monthTransactions = transactions.filter((t) => {
-      const date = new Date(t.date);
-      return date.getMonth() === selectedMonth - 1 && date.getFullYear() === selectedYear;
-    });
-    const income = monthTransactions
-      .filter((t) => t.type === 'income')
-      .reduce((acc, t) => acc + t.value, 0);
-    const expenses = monthTransactions
-      .filter((t) => t.type === 'expense')
-      .reduce((acc, t) => acc + t.value, 0);
-    return { income, expenses, balance: income - expenses };
-  }, [transactions, selectedMonth, selectedYear]);
-  const chartData = useMemo(() => {
-    const monthTransactions = transactions.filter((t) => {
-      const date = new Date(t.date);
-      return date.getMonth() === selectedMonth - 1 && date.getFullYear() === selectedYear;
-    });
-    const categoryTotals: Record<string, number> = {};
-    monthTransactions
-      .filter((t) => t.type === 'expense')
-      .forEach((t) => {
-        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.value;
-      });
-    return Object.entries(categoryTotals)
-      .map(([name, value]) => ({
-        name: categories.find((c) => c.value === name)?.label || name,
-        value,
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5);
-  }, [transactions, selectedMonth, selectedYear]);
-  const monthlyData = useMemo(() => {
-    const monthTransactions = transactions.filter((t) => {
-      const date = new Date(t.date);
-      return date.getMonth() === selectedMonth - 1 && date.getFullYear() === selectedYear;
-    });
-
-    // Group by day for the selected month
-    const days: Record<string, { income: number; expense: number }> = {};
-    monthTransactions.forEach((t) => {
-      const date = new Date(t.date);
-      const dayKey = date.getDate().toString();
-      if (!days[dayKey]) {
-        days[dayKey] = { income: 0, expense: 0 };
-      }
-      if (t.type === 'income') {
-        days[dayKey].income += t.value;
-      } else {
-        days[dayKey].expense += t.value;
-      }
-    });
-
-    return Object.entries(days)
-      .map(([day, data]) => ({
-        month: `Dia ${day}`,
-        receitas: data.income,
-        despesas: data.expense,
-      }))
-      .sort((a, b) => parseInt(a.month.split(' ')[1]) - parseInt(b.month.split(' ')[1]));
-  }, [transactions, selectedMonth, selectedYear]);
-  const monthNames = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
-
-  const availableYears = useMemo(() => {
-    const years = new Set<number>();
-    const currentYear = new Date().getFullYear();
-
-    // Add years from 2020 to 2030
-    for (let year = 2020; year <= 2030; year++) {
-      years.add(year);
-    }
-
-    // Add current year and surrounding years if not already included
-    for (let i = -2; i <= 2; i++) {
-      years.add(currentYear + i);
-    }
-
-    // Add years from transactions
-    transactions.forEach((t) => {
-      const date = new Date(t.date);
-      years.add(date.getFullYear());
-    });
-
-    return Array.from(years).sort((a, b) => b - a);
-  }, [transactions]);
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-6"
-    >
-      {/* Balance Card */}
-      <div
-        className="bg-gradient-to-br theme-gradient p-6 rounded-[2rem] text-white shadow-xl space-y-4"
-      >
-        <div className="flex justify-between items-center">
-          <div>
-            <span className="text-sm opacity-90">Saldo do Mês</span>
-            <h3 className="text-3xl font-bold mt-1">
-              R$ {stats.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </h3>
-          </div>
-          <div className="flex gap-2 mr-4">
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-3 py-2 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50"
-            >
-              {monthNames.map((month, index) => (
-                <option key={index + 1} value={index + 1} className="text-gray-900">
-                  {month}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-3 py-2 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50"
-            >
-              {availableYears.map((year) => (
-                <option key={year} value={year} className="text-gray-900">
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 pt-2">
-          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
-            <div className="flex items-center gap-2 mb-2">
-              <ArrowUpCircle size={18} />
-              <span className="text-xs opacity-90">Receitas</span>
-            </div>
-            <span className="font-bold text-lg">
-              R$ {stats.income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
-            <div className="flex items-center gap-2 mb-2">
-              <ArrowDownCircle size={18} />
-              <span className="text-xs opacity-90">Despesas</span>
-            </div>
-            <span className="font-bold text-lg">
-              R$ {stats.expenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-        </div>
-      </div>
-      {/* Charts Grid */}
-      <div className="grid gap-4">
-        {/* Pie Chart - Top Categories */}
-        {chartData.length > 0 && (
-          <div
-            className={`relative overflow-hidden ${
-              darkMode
-                ? 'bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900'
-                : 'bg-gradient-to-br from-white via-gray-50 to-gray-100'
-            } p-6 rounded-3xl shadow-2xl border ${
-              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
-            } backdrop-blur-sm`}
-            style={{
-              background: darkMode
-                ? 'linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)'
-                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%)',
-              boxShadow: darkMode
-                ? '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                : '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8)',
-            }}
-          >
-            {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/10 to-blue-400/10 rounded-full blur-3xl -translate-y-16 translate-x-16" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/10 to-pink-400/10 rounded-full blur-2xl translate-y-12 -translate-x-12" />
-
-            <div className="relative z-10">
-              <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg">
-                  <PieChartIcon size={20} className="text-white" />
-                </div>
-                <span className={darkMode ? 'text-white' : 'text-gray-900'}>
-                  Principais Despesas
-                </span>
-              </h4>
-
-              <div className="h-80 mb-6">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <defs>
-                      <filter id="pieGlow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                        <feMerge>
-                          <feMergeNode in="coloredBlur"/>
-                          <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                      </filter>
-                      <filter id="pieShadow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(0,0,0,0.1)"/>
-                      </filter>
-                    </defs>
-                    <Pie
-                      data={chartData}
-                      innerRadius={80}
-                      outerRadius={120}
-                      paddingAngle={4}
-                      dataKey="value"
-                      animationBegin={300}
-                      animationDuration={1200}
-                      animationEasing="ease-out"
-                      label={({ name, percent }) =>
-                        percent > 0.08 ? `${name}\n${(percent * 100).toFixed(0)}%` : ''
-                      }
-                      labelLine={false}
-                      style={{ filter: 'url(#pieGlow) url(#pieShadow)' }}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                          stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)'}
-                          strokeWidth={3}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: number) =>
-                        `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                      }
-                      contentStyle={{
-                        backgroundColor: darkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        borderRadius: '20px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        backdropFilter: 'blur(20px)',
-                        border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
-                      }}
-                      labelStyle={{
-                        color: darkMode ? '#F9FAFB' : '#111827',
-                        fontWeight: '700',
-                        marginBottom: '4px'
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              {chartData.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                  {chartData.map((entry, index) => (
-                    <motion.div
-                      key={entry.name}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.5 }}
-                      className={`flex items-center gap-3 p-3 rounded-xl ${
-                        darkMode ? 'bg-gray-700/50' : 'bg-white/60'
-                      } backdrop-blur-sm border ${
-                        darkMode ? 'border-gray-600/50' : 'border-gray-200/50'
-                      } shadow-sm hover:shadow-md transition-all duration-300`}
-                    >
-                      <div
-                        className="w-4 h-4 rounded-full shadow-lg ring-2 ring-white/20"
-                        style={{
-                          backgroundColor: COLORS[index % COLORS.length],
-                          boxShadow: `0 0 20px ${COLORS[index % COLORS.length]}40`
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <span className={`text-sm font-medium truncate block ${
-                          darkMode ? 'text-gray-200' : 'text-gray-800'
-                        }`}>
-                          {entry.name}
-                        </span>
-                        <span className={`text-xs ${
-                          darkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>
-                          R$ {entry.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        {/* Monthly Trend Chart */}
-        {monthlyData.length > 0 && (
-          <div
-            className={`relative overflow-hidden ${
-              darkMode
-                ? 'bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900'
-                : 'bg-gradient-to-br from-white via-gray-50 to-gray-100'
-            } p-6 rounded-3xl shadow-2xl border ${
-              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
-            } backdrop-blur-sm`}
-            style={{
-              background: darkMode
-                ? 'linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)'
-                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%)',
-              boxShadow: darkMode
-                ? '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                : '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8)',
-            }}
-          >
-            {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-emerald-400/8 to-teal-400/8 rounded-full blur-3xl -translate-y-20 translate-x-20" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-400/8 to-indigo-400/8 rounded-full blur-3xl translate-y-16 -translate-x-16" />
-
-            <div className="relative z-10">
-              <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-                  <TrendingUp size={20} className="text-white" />
-                </div>
-                <span className={darkMode ? 'text-white' : 'text-gray-900'}>
-                  Evolução Diária - {monthNames[selectedMonth - 1]} {selectedYear}
-                </span>
-              </h4>
-
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monthlyData}>
-                    <defs>
-                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
-                        <stop offset="30%" stopColor="#10b981" stopOpacity={0.2}/>
-                        <stop offset="70%" stopColor="#10b981" stopOpacity={0.1}/>
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={0.02}/>
-                      </linearGradient>
-                      <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.4}/>
-                        <stop offset="30%" stopColor="#f43f5e" stopOpacity={0.2}/>
-                        <stop offset="70%" stopColor="#f43f5e" stopOpacity={0.1}/>
-                        <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.02}/>
-                      </linearGradient>
-                      <filter id="glow">
-                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                        <feMerge>
-                          <feMergeNode in="coloredBlur"/>
-                          <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                      </filter>
-                      <filter id="areaShadow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="rgba(0,0,0,0.15)"/>
-                      </filter>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={darkMode ? 'rgba(156, 163, 175, 0.2)' : 'rgba(107, 114, 128, 0.2)'}
-                      strokeWidth={1}
-                      horizontal={true}
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
-                      axisLine={false}
-                      tickLine={false}
-                      interval="preserveStartEnd"
-                      tickMargin={12}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
-                      tickMargin={8}
-                    />
-                    <Tooltip
-                      formatter={(value: number) =>
-                        `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                      }
-                      labelFormatter={(label) => `${label}`}
-                      contentStyle={{
-                        backgroundColor: darkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        borderRadius: '20px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        backdropFilter: 'blur(20px)',
-                        border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
-                      }}
-                      labelStyle={{
-                        color: darkMode ? '#F9FAFB' : '#111827',
-                        fontWeight: '700',
-                        marginBottom: '4px'
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="receitas"
-                      stroke="#10b981"
-                      fillOpacity={1}
-                      fill="url(#incomeGradient)"
-                      strokeWidth={3}
-                      dot={{
-                        fill: '#10b981',
-                        strokeWidth: 2,
-                        r: 5,
-                        filter: 'url(#glow)',
-                        stroke: darkMode ? '#1F2937' : '#ffffff'
-                      }}
-                      activeDot={{
-                        r: 7,
-                        stroke: '#10b981',
-                        strokeWidth: 3,
-                        filter: 'url(#glow)',
-                        fill: darkMode ? '#1F2937' : '#ffffff'
-                      }}
-                      animationDuration={1500}
-                      animationEasing="ease-out"
-                      style={{ filter: 'url(#areaShadow)' }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="despesas"
-                      stroke="#f43f5e"
-                      fillOpacity={1}
-                      fill="url(#expenseGradient)"
-                      strokeWidth={3}
-                      dot={{
-                        fill: '#f43f5e',
-                        strokeWidth: 2,
-                        r: 5,
-                        filter: 'url(#glow)',
-                        stroke: darkMode ? '#1F2937' : '#ffffff'
-                      }}
-                      activeDot={{
-                        r: 7,
-                        stroke: '#f43f5e',
-                        strokeWidth: 3,
-                        filter: 'url(#glow)',
-                        fill: darkMode ? '#1F2937' : '#ffffff'
-                      }}
-                      animationDuration={1500}
-                      animationEasing="ease-out"
-                      animationBegin={300}
-                      style={{ filter: 'url(#areaShadow)' }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Income vs Expenses Comparison */}
-        {monthlyData.length > 0 && (
-          <div
-            className={`relative overflow-hidden ${
-              darkMode
-                ? 'bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900'
-                : 'bg-gradient-to-br from-white via-gray-50 to-gray-100'
-            } p-6 rounded-3xl shadow-2xl border ${
-              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
-            } backdrop-blur-sm`}
-            style={{
-              background: darkMode
-                ? 'linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%)'
-                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%)',
-              boxShadow: darkMode
-                ? '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                : '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8)',
-            }}
-          >
-            {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-purple-400/8 to-pink-400/8 rounded-full blur-3xl -translate-y-18 translate-x-18" />
-            <div className="absolute bottom-0 left-0 w-28 h-28 bg-gradient-to-tr from-orange-400/8 to-red-400/8 rounded-full blur-3xl translate-y-14 -translate-x-14" />
-
-            <div className="relative z-10">
-              <h4 className="font-bold mb-6 flex items-center gap-3 text-lg">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
-                  <BarChart3 size={20} className="text-white" />
-                </div>
-                <span className={darkMode ? 'text-white' : 'text-gray-900'}>
-                  Receitas vs Despesas - {monthNames[selectedMonth - 1]} {selectedYear}
-                </span>
-              </h4>
-
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyData} barCategoryGap="20%">
-                    <defs>
-                      <linearGradient id="receitasGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
-                        <stop offset="50%" stopColor="#059669" stopOpacity={0.95} />
-                        <stop offset="100%" stopColor="#047857" stopOpacity={1} />
-                      </linearGradient>
-                      <linearGradient id="despesasGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9} />
-                        <stop offset="50%" stopColor="#e11d48" stopOpacity={0.95} />
-                        <stop offset="100%" stopColor="#dc2626" stopOpacity={1} />
-                      </linearGradient>
-                      <filter id="barGlow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                        <feMerge>
-                          <feMergeNode in="coloredBlur"/>
-                          <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                      </filter>
-                      <filter id="barShadow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="rgba(0,0,0,0.15)"/>
-                      </filter>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
-                      strokeWidth={1}
-                    />
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
-                      axisLine={false}
-                      tickLine={false}
-                      interval="preserveStartEnd"
-                      tickMargin={12}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280', fontWeight: '600' }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
-                      tickMargin={8}
-                    />
-                    <Tooltip
-                      formatter={(value: number) =>
-                        `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                      }
-                      labelFormatter={(label) => `${label}`}
-                      contentStyle={{
-                        backgroundColor: darkMode ? 'rgba(55, 65, 81, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        borderRadius: '20px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        backdropFilter: 'blur(20px)',
-                        border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
-                      }}
-                      labelStyle={{
-                        color: darkMode ? '#F9FAFB' : '#111827',
-                        fontWeight: '700',
-                        marginBottom: '4px'
-                      }}
-                    />
-                    <Bar
-                      dataKey="receitas"
-                      fill="url(#receitasGradient)"
-                      radius={[8, 8, 0, 0]}
-                      name="Receitas"
-                      filter="url(#barGlow) url(#barShadow)"
-                      animationBegin={200}
-                      animationDuration={1200}
-                      animationEasing="ease-out"
-                    />
-                    <Bar
-                      dataKey="despesas"
-                      fill="url(#despesasGradient)"
-                      radius={[8, 8, 0, 0]}
-                      name="Despesas"
-                      filter="url(#barGlow) url(#barShadow)"
-                      animationBegin={400}
-                      animationDuration={1200}
-                      animationEasing="ease-out"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      {/* Recent Transactions */}
-      <div className="space-y-3">
-        <div className="flex justify-between items-center px-1">
-          <h4 className="font-bold">Transações Recentes</h4>
-        </div>
-        {transactions.slice(0, 5).map((t, index) => (
-          <motion.div
-            key={t.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.4 }}
-            className={`${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            } p-4 rounded-2xl flex items-center justify-between shadow-sm border will-change-transform ${
-              darkMode ? 'border-gray-700' : 'border-gray-100'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className={`p-3 rounded-xl ${
-                  t.type === 'income'
-                    ? 'bg-emerald-100 text-emerald-600'
-                    : 'bg-rose-100 text-rose-600'
-                }`}
-              >
-                <CategoryIcon category={t.category} />
-              </div>
-              <div>
-                <p className="font-bold text-sm">{t.description}</p>
-                <p className="text-xs opacity-50">
-                  {categories.find((c) => c.value === t.category)?.label} •{' '}
-                  {new Date(t.date).toLocaleDateString('pt-PT')}
-                </p>
-              </div>
-            </div>
-            <span
-              className={`font-bold ${
-                t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
-              }`}
-            >
-              {t.type === 'income' ? '+' : '-'} R$
-              {t.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
-          </motion.div>
-        ))}
-        {transactions.length === 0 && (
-          <div className="text-center py-12 opacity-50">
-            <p>Nenhuma transação ainda</p>
-            <p className="text-sm">Clique no + para adicionar</p>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-}
 function TransactionsScreen() {
   const { transactions, deleteTransaction, updateTransaction, preferences } = useFinance();
   const { theme, darkMode } = preferences;
@@ -1700,8 +1079,8 @@ function TransactionsScreen() {
                 <div className="flex gap-2">
                   {[
                     { value: 'all', label: 'Todas' },
-                    { value: 'income', label: 'Receitas' },
-                    { value: 'expense', label: 'Despesas' },
+                    { value: TransactionType.INCOME, label: 'Receitas' },
+                    { value: TransactionType.EXPENSE, label: 'Despesas' },
                   ].map((type) => (
                     <button
                       key={type.value}
@@ -1945,7 +1324,7 @@ function TransactionsScreen() {
                   <input
                     type="text"
                     value={editingTransaction.description}
-                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, description: e.target.value }))}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
@@ -1955,7 +1334,7 @@ function TransactionsScreen() {
                   <label className="text-sm font-medium mb-2 block">Valor (R$)</label>
                   <CurrencyInput
                     value={editingTransaction.value}
-                    onValueChange={(value) => setEditingTransaction(prev => ({ ...prev, value: value || 0 }))}
+                    onValueChange={(value) => setEditingTransaction((prev: Transaction) => ({ ...prev, value: value || 0 }))}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
@@ -1969,7 +1348,7 @@ function TransactionsScreen() {
                   <label className="text-sm font-medium mb-2 block">Categoria</label>
                   <select
                     value={editingTransaction.category}
-                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, category: e.target.value }))}
+                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, category: e.target.value as CategoryType }))}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
@@ -1986,7 +1365,7 @@ function TransactionsScreen() {
                   <input
                     type="text"
                     value={editingTransaction.account}
-                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, account: e.target.value }))}
+                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, account: e.target.value as AccountType }))}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
@@ -1997,7 +1376,7 @@ function TransactionsScreen() {
                   <input
                     type="date"
                     value={editingTransaction.date}
-                    onChange={(e) => setEditingTransaction(prev => ({ ...prev, date: e.target.value }))}
+                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, date: e.target.value }))}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
                     } outline-none focus:ring-2 focus:ring-emerald-500`}
@@ -2007,7 +1386,7 @@ function TransactionsScreen() {
                   <label className="text-sm font-medium mb-2 block">Tags</label>
                   <TagInput
                     tags={editingTransaction.tags}
-                    onTagsChange={(tags) => setEditingTransaction(prev => ({ ...prev, tags }))}
+                    onTagsChange={(tags) => setEditingTransaction((prev: Transaction) => ({ ...prev, tags }))}
                     placeholder="Adicionar tags..."
                     darkMode={darkMode}
                   />
@@ -2337,11 +1716,12 @@ function SettingsScreen() {
       })),
       goals: goals.map(g => ({
         id: g.id,
-        title: g.title,
-        target: g.target,
-        current: g.current,
+        title: g.name,
+        target: g.targetAmount,
+        current: g.currentAmount,
         deadline: g.deadline,
-        category: g.category,
+        icon: g.icon,
+        color: g.color,
         createdAt: g.createdAt,
       })),
       exportDate: new Date().toISOString(),
@@ -2939,7 +2319,6 @@ function MainApp() {
         show={showAddModal}
         onClose={() => setShowAddModal(false)}
         darkMode={darkMode}
-        theme={theme}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 // hooks/useFinanceLogic.ts - Hook otimizado para lógica de finanças
 import { useMemo, useCallback } from 'react';
 import { useFinance } from '../contexts/FinanceContext';
-import { TransactionType, Goal, GoalWithFeasibility, CategoryExpense } from '../types';
+import { Goal, GoalWithFeasibility, CategoryExpense, Transaction } from '../types';
 
 export function useFinanceLogic() {
   const {
@@ -20,14 +20,14 @@ export function useFinanceLogic() {
   // Cálculos financeiros otimizados com useMemo
   const totalIncome = useMemo(() =>
     transactions
-      .filter(transaction => transaction.type === TransactionType.INCOME)
+      .filter(transaction => transaction.type === 'income')
       .reduce((sum, transaction) => sum + transaction.value, 0),
     [transactions]
   );
 
   const totalExpenses = useMemo(() =>
     transactions
-      .filter(transaction => transaction.type === TransactionType.EXPENSE)
+      .filter(transaction => transaction.type === 'expense')
       .reduce((sum, transaction) => sum + transaction.value, 0),
     [transactions]
   );
@@ -62,7 +62,7 @@ export function useFinanceLogic() {
     const categoryTotals: Record<string, number> = {};
 
     transactions
-      .filter(transaction => transaction.type === TransactionType.EXPENSE)
+      .filter(transaction => transaction.type === 'expense')
       .forEach(transaction => {
         const categoryKey = transaction.category;
         categoryTotals[categoryKey] = (categoryTotals[categoryKey] || 0) + transaction.value;
@@ -85,7 +85,7 @@ export function useFinanceLogic() {
         monthsMap[monthKey] = { receitas: 0, despesas: 0 };
       }
 
-      if (transaction.type === TransactionType.INCOME) {
+      if (transaction.type === 'income') {
         monthsMap[monthKey].receitas += transaction.value;
       } else {
         monthsMap[monthKey].despesas += transaction.value;
@@ -160,5 +160,4 @@ export function useFinanceLogic() {
     deleteGoal: handleDeleteGoal,
     updatePreferences: handleUpdatePreferences,
   };
-}</content>
-<parameter name="filePath">/home/luiz-mendes/www./Finance-app/src/app/hooks/useFinanceLogic.ts
+}

@@ -1,48 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
 import {
-  getAuth,
-  signInAnonymously,
-  signInWithCustomToken,
   onAuthStateChanged,
-  signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  signOut as firebaseSignOut,
   updateEmail,
   updatePassword,
-  browserLocalPersistence,
-  setPersistence,
-  User,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from 'firebase/auth';
-import {
-  getFirestore,
-} from 'firebase/firestore';
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from 'firebase/storage';
-
-// Firebase configuration - replace with your actual config
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBO7vHCQocs9Ao7QwEIYA5uqApIzLcyOrE",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "finance-app-d0ef7.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "finance-app-d0ef7",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "finance-app-d0ef7.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "566923989390",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:566923989390:web:c9a83c0c7540d0f8cd54df",
-  measurementId: "G-XN97TQ4XDB"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-// Set persistence to local
-setPersistence(auth, browserLocalPersistence);
+import { auth, db, storage } from '../config/firebase';
 
 export { db, storage };
 
