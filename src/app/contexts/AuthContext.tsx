@@ -9,12 +9,21 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  updateEmail,
+  updatePassword,
   browserLocalPersistence,
   setPersistence,
+  User,
 } from 'firebase/auth';
 import {
   getFirestore,
 } from 'firebase/firestore';
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from 'firebase/storage';
 
 // Firebase configuration - replace with your actual config
 const firebaseConfig = {
@@ -30,11 +39,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Set persistence to local
 setPersistence(auth, browserLocalPersistence);
 
-export { db };
+export { db, storage };
 
 interface AuthContextType {
   user: any;
@@ -42,6 +52,10 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, name?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  updateUserProfile: (updates: { displayName?: string; photoURL?: string }) => Promise<{ error: any }>;
+  updateUserEmail: (newEmail: string) => Promise<{ error: any }>;
+  updateUserPassword: (newPassword: string) => Promise<{ error: any }>;
+  uploadProfileImage: (file: File) => Promise<{ error: any; url?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,6 +97,76 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await firebaseSignOut(auth);
   };
 
+  const updateUserProfile = async (updates: { displayName?: string; photoURL?: string }) => {
+    try {
+      if (user) {
+        await updateProfile(user, updates);
+        // Force refresh of user data by reloading the current user
+        await auth.currentUser?.reload();
+        const updatedUser = auth.currentUser;
+        setUser(updatedUser);
+      }
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
+  };
+
+  const updateUserEmail = async (newEmail: string) => {
+    try {
+      if (user) {
+        await updateEmail(user, newEmail);
+        setUser({ ...user, email: newEmail });
+      }
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
+  };
+
+  const updateUserPassword = async (newPassword: string) => {
+    try {
+      if (user) {
+        await updatePassword(user, newPassword);
+      }
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
+  };
+
+  const uploadProfileImage = async (file: File) => {
+    try {
+      if (!user) throw new Error('User not authenticated');
+
+      console.log('Starting upload for user:', user.uid);
+      console.log('File to upload:', file.name, file.size, file.type);
+
+      const storageRef = ref(storage, `profile-images/${user.uid}`);
+      console.log('Storage ref created:', storageRef.fullPath);
+
+      const snapshot = await uploadBytes(storageRef, file);
+      console.log('Upload completed, snapshot:', snapshot);
+
+      const url = await getDownloadURL(snapshot.ref);
+      console.log('Download URL obtained:', url);
+
+      // Update user profile with new photo URL
+      await updateProfile(user, { photoURL: url });
+      console.log('Firebase Auth profile updated');
+
+      // Force update local state immediately
+      const updatedUser = { ...user, photoURL: url };
+      setUser(updatedUser);
+      console.log('Local user state updated immediately');
+
+      return { error: null, url };
+    } catch (error: any) {
+      console.error('Upload profile image error:', error);
+      return { error };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -91,6 +175,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        updateUserProfile,
+        updateUserEmail,
+        updateUserPassword,
+        uploadProfileImage,
       }}
     >
       {children}
