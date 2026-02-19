@@ -479,28 +479,40 @@ function TransactionModal({
   if (!show) return null;
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{
-          type: 'spring',
-          damping: 25,
-          stiffness: 200,
-          mass: 0.8,
-          opacity: { duration: 0.2 },
-          scale: { duration: 0.3 }
-        }}
-        className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
-          darkMode ? 'bg-gray-800' : 'bg-white'
-        } w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[80vh] overflow-y-auto z-[1001]`}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="fixed inset-0 z-[1000] p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="absolute inset-0 bg-black/20 backdrop-blur-md cursor-pointer"
+          onClick={onClose}
+        />
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{
+            type: 'spring',
+            damping: 25,
+            stiffness: 200,
+            mass: 0.8,
+            opacity: { duration: 0.2 },
+            scale: { duration: 0.3 }
+          }}
+          className={`absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          } w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[80vh] z-[1001]`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header fixo */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
-            className="sticky top-0 bg-inherit p-6 pb-4 border-b border-gray-100 dark:border-gray-700 rounded-t-[3rem]"
+            className={`sticky top-0 z-10 p-6 pb-4 border-b border-gray-100 dark:border-gray-700 rounded-t-[3rem] ${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            }`}
           >
             <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4 sm:hidden" />
             <div className="flex items-center justify-between">
@@ -523,13 +535,16 @@ function TransactionModal({
               </motion.button>
             </div>
           </motion.div>
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-            onSubmit={handleSubmit}
-            className="p-6 space-y-4"
-          >
+
+          {/* Conteúdo com scroll */}
+          <div className="overflow-y-auto max-h-[calc(80vh-120px)]">
+            <motion.form
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              onSubmit={handleSubmit}
+              className="p-6 space-y-4"
+            >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -701,7 +716,9 @@ function TransactionModal({
               {loading ? 'Salvando...' : 'Confirmar Lançamento'}
             </button>
           </motion.form>
+          </div>
         </motion.div>
+      </div>
     </AnimatePresence>
   );
 }
