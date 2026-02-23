@@ -5,7 +5,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
   callback: T,
   delay: number
 ): T {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   return useCallback((...args: Parameters<T>) => {
     if (timeoutRef.current) {
@@ -19,7 +19,6 @@ export function useDebounce<T extends (...args: any[]) => any>(
 }
 
 // hooks/useClickPrevention.ts - Hook para prevenir cliques duplos
-import { useCallback, useRef } from 'react';
 
 export function useClickPrevention<T extends (...args: any[]) => any>(
   callback: T,

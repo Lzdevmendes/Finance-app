@@ -11,7 +11,6 @@ import {
   query,
   deleteDoc,
   updateDoc,
-  where,
   orderBy,
 } from 'firebase/firestore';
 
@@ -36,14 +35,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [preferences, setPreferences] = useState<UserPreferences>({ theme: 'emerald', darkMode: false });
+  const [preferences, setPreferences] = useState<UserPreferences>({ theme: 'emerald', darkMode: false, currency: 'BRL' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       setTransactions([]);
       setGoals([]);
-      setPreferences({ theme: 'emerald', darkMode: false });
+      setPreferences({ theme: 'emerald', darkMode: false, currency: 'BRL' });
       setLoading(false);
       return;
     }
@@ -163,7 +162,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     await deleteDoc(doc(db, 'users', user.uid, 'goals', id));
   };
 
-  const updatePreferences = async (newPreferences: Partial<Preferences>) => {
+  const updatePreferences = async (newPreferences: Partial<UserPreferences>) => {
     if (!user) return;
     const updated = { ...preferences, ...newPreferences };
     setPreferences(updated);

@@ -7,9 +7,8 @@ import {
   signOut as firebaseSignOut,
   updateEmail,
   updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential
 } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from '../config/firebase';
 
 export { db, storage };

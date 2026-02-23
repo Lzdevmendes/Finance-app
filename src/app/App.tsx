@@ -44,10 +44,12 @@ const themes = {
     text: 'text-emerald-600',
     border: 'border-emerald-600',
     light: 'bg-emerald-50',
+    darkLight: 'dark:bg-emerald-900/20',
     gradient: 'from-emerald-500 to-emerald-600',
     bgGradient: 'from-emerald-50 to-green-50',
     accent: 'bg-emerald-100',
     shadow: 'shadow-emerald-100',
+    focusRing: 'focus:ring-emerald-500',
   },
   blue: {
     primary: 'bg-blue-600',
@@ -55,10 +57,12 @@ const themes = {
     text: 'text-blue-600',
     border: 'border-blue-600',
     light: 'bg-blue-50',
+    darkLight: 'dark:bg-blue-900/20',
     gradient: 'from-blue-500 to-blue-600',
     bgGradient: 'from-blue-50 to-indigo-50',
     accent: 'bg-blue-100',
     shadow: 'shadow-blue-100',
+    focusRing: 'focus:ring-blue-500',
   },
   purple: {
     primary: 'bg-purple-600',
@@ -66,10 +70,12 @@ const themes = {
     text: 'text-purple-600',
     border: 'border-purple-600',
     light: 'bg-purple-50',
+    darkLight: 'dark:bg-purple-900/20',
     gradient: 'from-purple-500 to-purple-600',
     bgGradient: 'from-purple-50 to-violet-50',
     accent: 'bg-purple-100',
     shadow: 'shadow-purple-100',
+    focusRing: 'focus:ring-purple-500',
   },
   rose: {
     primary: 'bg-rose-600',
@@ -77,10 +83,12 @@ const themes = {
     text: 'text-rose-600',
     border: 'border-rose-600',
     light: 'bg-rose-50',
+    darkLight: 'dark:bg-rose-900/20',
     gradient: 'from-rose-500 to-rose-600',
     bgGradient: 'from-rose-50 to-pink-50',
     accent: 'bg-rose-100',
     shadow: 'shadow-rose-100',
+    focusRing: 'focus:ring-rose-500',
   },
 };
 const categories = [
@@ -493,35 +501,29 @@ function TransactionModal({
   if (!show) return null;
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[1000] p-4">
-        {/* Elegant gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60 backdrop-blur-md" />
-        {/* Additional subtle overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10" />
-
+      <div className="fixed inset-0 z-[1000]">
+        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="absolute inset-0 cursor-pointer"
+          transition={{ duration: 0.25 }}
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
           onClick={onClose}
         />
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
           transition={{
             type: 'spring',
-            damping: 25,
-            stiffness: 200,
-            mass: 0.8,
-            opacity: { duration: 0.2 },
-            scale: { duration: 0.3 }
+            damping: 28,
+            stiffness: 300,
           }}
-          className={`absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
+          className={`absolute bottom-0 left-0 right-0 ${
             darkMode ? 'bg-gray-800' : 'bg-white'
-          } w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] relative shadow-2xl max-h-[80vh] z-[1001]`}
+          } rounded-t-[2rem] shadow-2xl z-[1001]`}
+          style={{ maxHeight: 'calc(92vh - env(safe-area-inset-top, 0px))' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header fixo */}
@@ -556,7 +558,7 @@ function TransactionModal({
           </motion.div>
 
           {/* Conteúdo com scroll */}
-          <div className="overflow-y-auto max-h-[calc(80vh-120px)]">
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(92vh - env(safe-area-inset-top, 0px) - 120px)', paddingBottom: 'env(safe-area-inset-bottom, 1rem)' }}>
             {error && (
               <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
                 <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
@@ -817,21 +819,24 @@ function GoalModal({
   if (!show) return null;
   return (
     <AnimatePresence>
+      <div className="fixed inset-0 z-[1000]">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+          onClick={onClose}
+        />
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{
-          type: 'spring',
-          damping: 25,
-          stiffness: 200,
-          mass: 0.8,
-          opacity: { duration: 0.2 },
-          scale: { duration: 0.3 }
-        }}
-        className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+        className={`absolute bottom-0 left-0 right-0 ${
           darkMode ? 'bg-gray-800' : 'bg-white'
-        } w-full max-w-md p-8 rounded-3xl relative shadow-2xl max-h-[80vh] overflow-y-auto z-[1001]`}
+        } p-8 rounded-t-[2rem] shadow-2xl overflow-y-auto z-[1001]`}
+        style={{ maxHeight: 'calc(92vh - env(safe-area-inset-top, 0px))', paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}
         onClick={(e) => e.stopPropagation()}
       >
           <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6 sm:hidden" />
@@ -942,6 +947,7 @@ function GoalModal({
             </motion.div>
           </motion.form>
         </motion.div>
+      </div>
     </AnimatePresence>
   );
 }
@@ -1300,15 +1306,27 @@ function TransactionsScreen() {
       {/* Edit Transaction Modal */}
       <AnimatePresence>
         {showEditModal && editingTransaction && (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            } p-6 rounded-3xl w-full max-w-md z-[1001] relative`}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="fixed inset-0 z-[1000]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+              onClick={() => setShowEditModal(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className={`absolute bottom-0 left-0 right-0 ${
+                darkMode ? 'bg-gray-800' : 'bg-white'
+              } p-6 rounded-t-[2rem] overflow-y-auto z-[1001]`}
+              style={{ maxHeight: 'calc(92vh - env(safe-area-inset-top, 0px))', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4" />
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold">Editar Transação</h3>
                 <button
@@ -1408,7 +1426,8 @@ function TransactionsScreen() {
                   Salvar
                 </button>
               </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </motion.div>
@@ -1586,27 +1605,41 @@ function GoalsScreen() {
       {/* Progress Modal */}
       <AnimatePresence>
         {showProgressModal && progressGoal && (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            } w-full max-w-sm p-6 rounded-3xl relative shadow-2xl z-[1001]`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
+          <div className="fixed inset-0 z-[1000]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
               onClick={() => setShowProgressModal(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors z-10"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className={`absolute bottom-0 left-0 right-0 ${
+                darkMode ? 'bg-gray-800' : 'bg-white'
+              } p-6 rounded-t-[2rem] shadow-2xl z-[1001]`}
+              style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <X size={20} />
-            </button>
-              <div className="text-center mb-6">
-                <div className={`${themes[theme].light} ${themes[theme].text} p-3 rounded-2xl w-fit mx-auto mb-3`}>
-                  <Target size={24} />
+              <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4" />
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-bold">Adicionar Progresso</h3>
+                  <p className="text-sm opacity-70">{progressGoal.name}</p>
                 </div>
-                <h3 className="text-lg font-bold mb-2">Adicionar Progresso</h3>
-                <p className="text-sm opacity-70">{progressGoal.name}</p>
+                <button
+                  onClick={() => setShowProgressModal(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className={`${themes[theme].light} ${themes[theme].text} p-3 rounded-2xl w-fit mx-auto mb-6`}>
+                <Target size={24} />
               </div>
 
               <div className="space-y-4">
@@ -1644,7 +1677,8 @@ function GoalsScreen() {
                   </button>
                 </div>
               </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </motion.div>
@@ -2043,81 +2077,94 @@ function SettingsScreen() {
       {/* Avatar Selection Modal */}
       <AnimatePresence>
         {showAvatarModal && (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className={`fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/6 ${
-              darkMode ? 'bg-gray-800' : 'bg-white'
-            } w-full max-w-md p-6 rounded-3xl relative shadow-2xl max-h-[80vh] overflow-y-auto z-[1001]`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold">Escolher Avatar</h3>
-              <button
-                onClick={() => setShowAvatarModal(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {avatarOptions.map((avatar) => (
+          <div className="fixed inset-0 z-[1000]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+              onClick={() => { setShowAvatarModal(false); setSelectedAvatar(null); }}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className={`absolute bottom-0 left-0 right-0 ${
+                darkMode ? 'bg-gray-800' : 'bg-white'
+              } p-6 rounded-t-[2rem] shadow-2xl overflow-y-auto z-[1001]`}
+              style={{ maxHeight: 'calc(90vh - env(safe-area-inset-top, 0px))', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4" />
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold">Escolher Avatar</h3>
                 <button
-                  key={avatar.id}
-                  onClick={() => setSelectedAvatar(avatar.src)}
-                  className={`relative p-3 rounded-xl border-2 transition-all ${
-                    selectedAvatar === avatar.src
-                      ? `${themes[theme].primary} border-transparent`
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                  }`}
+                  onClick={() => { setShowAvatarModal(false); setSelectedAvatar(null); }}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                 >
-                  <img
-                    src={avatar.src}
-                    alt={avatar.name}
-                    className="w-16 h-16 rounded-full object-cover mx-auto"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://ui-avatars.com/api/?name=${avatar.name}&background=${theme === 'emerald' ? '10b981' : theme === 'blue' ? '3b82f6' : theme === 'purple' ? '8b5cf6' : 'f97316'}&color=fff&size=64`;
-                    }}
-                  />
-                  <p className="text-xs text-center mt-2 opacity-75">{avatar.name}</p>
-                  {selectedAvatar === avatar.src && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle size={14} className="text-white" />
-                    </div>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                {avatarOptions.map((avatar) => (
+                  <button
+                    key={avatar.id}
+                    onClick={() => setSelectedAvatar(avatar.src)}
+                    className={`relative p-3 rounded-xl border-2 transition-all ${
+                      selectedAvatar === avatar.src
+                        ? `${themes[theme].primary} border-transparent`
+                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                    }`}
+                  >
+                    <img
+                      src={avatar.src}
+                      alt={avatar.name}
+                      className="w-16 h-16 rounded-full object-cover mx-auto"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://ui-avatars.com/api/?name=${avatar.name}&background=${theme === 'emerald' ? '10b981' : theme === 'blue' ? '3b82f6' : theme === 'purple' ? '8b5cf6' : 'f97316'}&color=fff&size=64`;
+                      }}
+                    />
+                    <p className="text-xs text-center mt-2 opacity-75">{avatar.name}</p>
+                    {selectedAvatar === avatar.src && (
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <CheckCircle size={14} className="text-white" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAvatarModal(false);
+                    setSelectedAvatar(null);
+                  }}
+                  className="flex-1 py-3 px-4 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => selectedAvatar && handleAvatarSelect(selectedAvatar)}
+                  disabled={!selectedAvatar || loading}
+                  className={`flex-1 py-3 px-4 ${themes[theme].primary} text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    'Salvar Avatar'
                   )}
                 </button>
-              ))}
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAvatarModal(false);
-                  setSelectedAvatar(null);
-                }}
-                className="flex-1 py-3 px-4 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl font-medium"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => selectedAvatar && handleAvatarSelect(selectedAvatar)}
-                disabled={!selectedAvatar || loading}
-                className={`flex-1 py-3 px-4 ${themes[theme].primary} text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  'Salvar Avatar'
-                )}
-              </button>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -2165,7 +2212,7 @@ function SettingsScreen() {
                     onChange={(e) => setLoginData({ ...loginData, currentPassword: e.target.value })}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-                    } focus:outline-none focus:ring-2 focus:ring-${theme}-500`}
+                    } focus:outline-none focus:ring-2 ${themes[theme].focusRing}`}
                     placeholder="Digite sua senha atual"
                     required
                   />
@@ -2179,7 +2226,7 @@ function SettingsScreen() {
                     onChange={(e) => setLoginData({ ...loginData, newEmail: e.target.value })}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-                    } focus:outline-none focus:ring-2 focus:ring-${theme}-500`}
+                    } focus:outline-none focus:ring-2 ${themes[theme].focusRing}`}
                     placeholder="novo@email.com"
                   />
                 </div>
@@ -2192,7 +2239,7 @@ function SettingsScreen() {
                     onChange={(e) => setLoginData({ ...loginData, newPassword: e.target.value })}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-                    } focus:outline-none focus:ring-2 focus:ring-${theme}-500`}
+                    } focus:outline-none focus:ring-2 ${themes[theme].focusRing}`}
                     placeholder="Digite a nova senha"
                   />
                 </div>
@@ -2205,7 +2252,7 @@ function SettingsScreen() {
                     onChange={(e) => setLoginData({ ...loginData, confirmPassword: e.target.value })}
                     className={`w-full p-3 rounded-xl border ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-                    } focus:outline-none focus:ring-2 focus:ring-${theme}-500`}
+                    } focus:outline-none focus:ring-2 ${themes[theme].focusRing}`}
                     placeholder="Confirme a nova senha"
                   />
                 </div>
@@ -2273,7 +2320,7 @@ function MainApp() {
         </div>
       </header>
       {/* Main Content */}
-      <main className="fixed top-20 left-0 right-0 bottom-20 overflow-y-auto scrollbar-hide p-4 max-w-md mx-auto">
+      <main className="fixed top-20 left-0 right-0 overflow-y-auto scrollbar-hide p-4 max-w-md mx-auto" style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && <Dashboard key="dashboard" />}
           {activeTab === 'transactions' && <TransactionsScreen key="transactions" />}
@@ -2286,7 +2333,8 @@ function MainApp() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setShowAddModal(true)}
-          className="fixed bottom-20 right-6 w-16 h-16 rounded-full theme-primary text-white shadow-2xl flex items-center justify-center z-40 will-change-transform"
+          className="fixed right-6 w-16 h-16 rounded-full theme-primary text-white shadow-2xl flex items-center justify-center z-40 will-change-transform"
+          style={{ bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))' }}
         >
           <Plus size={28} />
         </motion.button>
@@ -2297,7 +2345,8 @@ function MainApp() {
           darkMode ? 'bg-gray-800/80' : 'bg-white/80'
         } backdrop-blur-sm border-t ${
           darkMode ? 'border-gray-700' : 'border-gray-100'
-        } px-6 py-3 flex justify-between items-center z-50 rounded-t-[2.5rem] shadow-lg`}
+        } px-6 pt-3 flex justify-between items-center z-50 rounded-t-[2.5rem] shadow-lg`}
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         {tabs.map((tab) => (
           <button
@@ -2305,7 +2354,7 @@ function MainApp() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all will-change-transform ${
               activeTab === tab.id
-                ? `${themes[theme].text} bg-${theme}-50 dark:bg-${theme}-900/20`
+                ? `${themes[theme].text} ${themes[theme].light} ${themes[theme].darkLight}`
                 : 'text-gray-400'
             }`}
           >
