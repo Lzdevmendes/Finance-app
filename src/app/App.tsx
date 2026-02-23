@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import {
@@ -478,17 +479,29 @@ function TransactionModal({
       return;
     }
 
+    const numericValue = parseFloat(String(value).replace(',', '.')) || 0;
+    if (numericValue <= 0) {
+      setError('Valor deve ser maior que zero');
+      return;
+    }
+
     setLoading(true);
     try {
-      await addTransaction({
-        description: description.trim(),
-        value: parseFloat(value),
-        type,
-        category,
-        account,
-        tags,
-        date: new Date(date).toISOString(),
-      });
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Tempo limite esgotado. Verifique sua conexão e tente novamente.')), 15000)
+      );
+      await Promise.race([
+        addTransaction({
+          description: description.trim(),
+          value: numericValue,
+          type,
+          category,
+          account,
+          tags,
+          date: new Date(date + 'T12:00:00').toISOString(),
+        }),
+        timeout,
+      ]);
       resetForm();
       onClose();
     } catch (error: any) {
@@ -784,171 +797,182 @@ function GoalModal({
     }
   }, [editGoal]);
 
+  const [error, setError] = useState<string | null>(null);
+
   const resetForm = () => {
     setName('');
     setTargetAmount('');
     setCurrentAmount('');
+    setError(null);
   };
+
+  const validateGoalForm = () => {
+    if (!name.trim()) {
+      setError('Nome da meta é obrigatório');
+      return false;
+    }
+    const target = parseFloat(String(targetAmount).replace(',', '.')) || 0;
+    if (target <= 0) {
+      setError('Valor da meta deve ser maior que zero');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (!validateGoalForm()) return;
+
+    const targetNum = parseFloat(String(targetAmount).replace(',', '.')) || 0;
+    const currentNum = parseFloat(String(currentAmount).replace(',', '.')) || 0;
+
     setLoading(true);
     try {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Tempo limite esgotado. Verifique sua conexão.')), 15000)
+      );
       if (editGoal) {
-        await updateGoal(editGoal.id, {
-          name,
-          targetAmount: parseFloat(targetAmount || '0'),
-          currentAmount: parseFloat(currentAmount || '0'),
-        });
+        await Promise.race([
+          updateGoal(editGoal.id, { name, targetAmount: targetNum, currentAmount: currentNum }),
+          timeout,
+        ]);
       } else {
-        await addGoal({
-          name,
-          targetAmount: parseFloat(targetAmount || '0'),
-          currentAmount: parseFloat(currentAmount || '0'),
-          icon: 'target',
-          color: theme,
-        });
+        await Promise.race([
+          addGoal({ name, targetAmount: targetNum, currentAmount: currentNum, icon: 'target', color: theme }),
+          timeout,
+        ]);
       }
       resetForm();
       onClose();
-    } catch (error) {
-      console.error('Error with goal:', error);
+    } catch (err: any) {
+      console.error('Error with goal:', err);
+      setError(err.message || 'Erro ao salvar meta. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
+
   if (!show) return null;
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[1000]">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
-          onClick={onClose}
-        />
-      <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-        className={`absolute bottom-0 left-0 right-0 ${
-          darkMode ? 'bg-gray-800' : 'bg-white'
-        } p-8 rounded-t-[2rem] shadow-2xl overflow-y-auto z-[1001]`}
-        style={{ maxHeight: 'calc(92vh - env(safe-area-inset-top, 0px))', paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-          <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6 sm:hidden" />
-          <motion.h3
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-            className="text-xl font-bold mb-6"
+      {show && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+          style={{
+            paddingTop: 'env(safe-area-inset-top, 0px)',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          }}
+        >
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          {/* Modal centralizado - bordas arredondadas em todos os lados */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            className={`relative z-10 w-full max-w-sm flex flex-col ${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } rounded-3xl shadow-2xl`}
+            style={{ maxHeight: '80vh' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {editGoal ? 'Editar Meta' : 'Nova Meta'}
-          </motion.h3>
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            onSubmit={handleSubmit}
-            className="space-y-4"
-          >
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-            >
-              <label className="block text-sm font-medium mb-2 opacity-70">
-                Nome da Meta
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Viagem para Paris"
-                className={`w-full p-4 rounded-2xl border ${
-                  darkMode
-                    ? 'bg-gray-700 border-gray-600'
-                    : 'bg-gray-50 border-gray-100'
-                } focus:ring-2 focus:ring-emerald-500 outline-none`}
-                required
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-            >
-              <label className="block text-sm font-medium mb-2 opacity-70">
-                Valor da Meta
-              </label>
-              <CurrencyInput
-                value={targetAmount}
-                onValueChange={(value) => setTargetAmount(value || '')}
-                prefix="R$ "
-                decimalsLimit={2}
-                decimalSeparator=","
-                groupSeparator="."
-                placeholder="R$ 0,00"
-                className={`w-full p-4 rounded-2xl border ${
-                  darkMode
-                    ? 'bg-gray-700 border-gray-600'
-                    : 'bg-gray-50 border-gray-100'
-                } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl`}
-                required
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-            >
-              <label className="block text-sm font-medium mb-2 opacity-70">
-                Valor Atual
-              </label>
-              <CurrencyInput
-                value={currentAmount}
-                onValueChange={(value) => setCurrentAmount(value || '')}
-                prefix="R$ "
-                decimalsLimit={2}
-                decimalSeparator=","
-                groupSeparator="."
-                placeholder="R$ 0,00"
-                className={`w-full p-4 rounded-2xl border ${
-                  darkMode
-                    ? 'bg-gray-700 border-gray-600'
-                    : 'bg-gray-50 border-gray-100'
-                } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl`}
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-              className="flex gap-3 mt-6"
-            >
-              <button
-                onClick={onClose}
-                className={`flex-1 py-3 rounded-2xl font-semibold border ${
-                  darkMode ? 'border-gray-600' : 'border-gray-200'
-                }`}
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="theme-primary flex-1 py-3 rounded-2xl font-semibold text-white shadow-lg disabled:opacity-50"
-              >
-                {loading ? 'Salvando...' : editGoal ? 'Atualizar Meta' : 'Criar Meta'}
-              </button>
-            </motion.div>
-          </motion.form>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+            {/* Header */}
+            <div className={`flex-shrink-0 px-6 pt-5 pb-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold">
+                  {editGoal ? 'Editar Meta' : 'Nova Meta'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Conteúdo scrollável */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {error && (
+                <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+                </div>
+              )}
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 opacity-70">
+                    Nome da Meta
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); setError(null); }}
+                    placeholder="Ex: Viagem para Paris"
+                    className={`w-full p-4 rounded-2xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-100'
+                    } focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all`}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 opacity-70">
+                    Valor da Meta
+                  </label>
+                  <CurrencyInput
+                    value={targetAmount}
+                    onValueChange={(value) => { setTargetAmount(value || ''); setError(null); }}
+                    prefix="R$ "
+                    decimalsLimit={2}
+                    decimalSeparator=","
+                    groupSeparator="."
+                    placeholder="R$ 0,00"
+                    className={`w-full p-4 rounded-2xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-100'
+                    } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl`}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 opacity-70">
+                    Valor Atual (já economizado)
+                  </label>
+                  <CurrencyInput
+                    value={currentAmount}
+                    onValueChange={(value) => setCurrentAmount(value || '')}
+                    prefix="R$ "
+                    decimalsLimit={2}
+                    decimalSeparator=","
+                    groupSeparator="."
+                    placeholder="R$ 0,00"
+                    className={`w-full p-4 rounded-2xl border ${
+                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-100'
+                    } focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl`}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 theme-primary text-white rounded-2xl font-bold shadow-lg mt-2 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {loading ? 'Salvando...' : editGoal ? 'Atualizar Meta' : 'Criar Meta'}
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 }
 function TransactionsScreen() {
@@ -962,6 +986,7 @@ function TransactionsScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
   const accounts = useMemo(() => {
     const uniqueAccounts = [...new Set(transactions.map(t => t.account))];
     return uniqueAccounts.filter(account => account && account.trim() !== '');
@@ -1005,16 +1030,26 @@ function TransactionsScreen() {
   };
   const handleSaveEdit = async () => {
     if (!editingTransaction) return;
-    await updateTransaction(editingTransaction.id, {
-      description: editingTransaction.description,
-      value: editingTransaction.value,
-      category: editingTransaction.category,
-      tags: editingTransaction.tags,
-      account: editingTransaction.account,
-      date: editingTransaction.date,
-    });
-    setShowEditModal(false);
-    setEditingTransaction(null);
+    setEditLoading(true);
+    try {
+      const rawDate = editingTransaction.date?.split('T')[0] || editingTransaction.date;
+      const isoDate = rawDate ? new Date(rawDate + 'T12:00:00').toISOString() : editingTransaction.date;
+      const numericValue = parseFloat(String(editingTransaction.value).replace(',', '.')) || 0;
+      await updateTransaction(editingTransaction.id, {
+        description: editingTransaction.description,
+        value: numericValue,
+        category: editingTransaction.category,
+        tags: editingTransaction.tags || [],
+        account: editingTransaction.account,
+        date: isoDate,
+      });
+      setShowEditModal(false);
+      setEditingTransaction(null);
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+    } finally {
+      setEditLoading(false);
+    }
   };
   const clearFilters = () => {
     setSearchTerm('');
@@ -1303,133 +1338,146 @@ function TransactionsScreen() {
           </div>
         )}
       </div>
-      {/* Edit Transaction Modal */}
-      <AnimatePresence>
-        {showEditModal && editingTransaction && (
-          <div className="fixed inset-0 z-[1000]">
+      {/* Edit Transaction Modal — portal para sair do contexto de transform */}
+      {createPortal(
+        <AnimatePresence>
+          {showEditModal && editingTransaction && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+            style={{
+              paddingTop: 'env(safe-area-inset-top, 0px)',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            }}
+          >
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
-              onClick={() => setShowEditModal(false)}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => { if (!editLoading) setShowEditModal(false); }}
             />
+            {/* Modal centralizado - bordas arredondadas em todos os lados */}
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className={`absolute bottom-0 left-0 right-0 ${
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+              className={`relative z-10 w-full max-w-sm flex flex-col ${
                 darkMode ? 'bg-gray-800' : 'bg-white'
-              } p-6 rounded-t-[2rem] overflow-y-auto z-[1001]`}
-              style={{ maxHeight: 'calc(92vh - env(safe-area-inset-top, 0px))', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+              } rounded-3xl shadow-2xl`}
+              style={{ maxHeight: '80vh' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4" />
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold">Editar Transação</h3>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Descrição</label>
-                  <input
-                    type="text"
-                    value={editingTransaction.description}
-                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, description: e.target.value }))}
-                    className={`w-full p-3 rounded-xl border ${
-                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
-                    } outline-none focus:ring-2 focus:ring-emerald-500`}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Valor (R$)</label>
-                  <CurrencyInput
-                    value={editingTransaction.value}
-                    onValueChange={(value) => setEditingTransaction((prev: Transaction) => ({ ...prev, value: value || 0 }))}
-                    className={`w-full p-3 rounded-xl border ${
-                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
-                    } outline-none focus:ring-2 focus:ring-emerald-500`}
-                    placeholder="0,00"
-                    decimalsLimit={2}
-                    decimalSeparator=","
-                    groupSeparator="."
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Categoria</label>
-                  <select
-                    value={editingTransaction.category}
-                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, category: e.target.value as CategoryType }))}
-                    className={`w-full p-3 rounded-xl border ${
-                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
-                    } outline-none focus:ring-2 focus:ring-emerald-500`}
+              {/* Header */}
+              <div className={`flex-shrink-0 px-6 pt-5 pb-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold">Editar Transação</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                   >
-                    {categories.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.icon} {cat.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Conta</label>
-                  <input
-                    type="text"
-                    value={editingTransaction.account}
-                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, account: e.target.value as AccountType }))}
-                    className={`w-full p-3 rounded-xl border ${
-                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
-                    } outline-none focus:ring-2 focus:ring-emerald-500`}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Data</label>
-                  <input
-                    type="date"
-                    value={editingTransaction.date}
-                    onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, date: e.target.value }))}
-                    className={`w-full p-3 rounded-xl border ${
-                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
-                    } outline-none focus:ring-2 focus:ring-emerald-500`}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Tags</label>
-                  <TagInput
-                    tags={editingTransaction.tags}
-                    onTagsChange={(tags) => setEditingTransaction((prev: Transaction) => ({ ...prev, tags }))}
-                    placeholder="Adicionar tags..."
-                    darkMode={darkMode}
-                  />
+                    <X size={20} />
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className={`flex-1 py-3 rounded-xl font-semibold border ${
-                    darkMode ? 'border-gray-600' : 'border-gray-200'
-                  }`}
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSaveEdit}
-                  className="theme-primary flex-1 py-3 rounded-xl font-semibold text-white shadow-lg"
-                >
-                  Salvar
-                </button>
+
+              {/* Conteúdo scrollável */}
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <div className="p-6 space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block opacity-70">Descrição</label>
+                    <input
+                      type="text"
+                      value={editingTransaction.description}
+                      onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, description: e.target.value }))}
+                      className={`w-full p-4 rounded-2xl border ${
+                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+                      } outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block opacity-70">Valor</label>
+                    <CurrencyInput
+                      value={editingTransaction.value}
+                      onValueChange={(value) => setEditingTransaction((prev: Transaction) => ({ ...prev, value: value || '0' }))}
+                      prefix="R$ "
+                      className={`w-full p-4 rounded-2xl border ${
+                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+                      } outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-2xl`}
+                      placeholder="R$ 0,00"
+                      decimalsLimit={2}
+                      decimalSeparator=","
+                      groupSeparator="."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block opacity-70">Categoria</label>
+                    <select
+                      value={editingTransaction.category}
+                      onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, category: e.target.value as CategoryType }))}
+                      className={`w-full p-4 rounded-2xl border ${
+                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+                      } outline-none`}
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat.value} value={cat.value}>
+                          {cat.icon} {cat.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block opacity-70">Conta</label>
+                    <select
+                      value={editingTransaction.account}
+                      onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, account: e.target.value as AccountType }))}
+                      className={`w-full p-4 rounded-2xl border ${
+                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+                      } outline-none`}
+                    >
+                      <option value="checking">Conta Corrente</option>
+                      <option value="savings">Conta Poupança</option>
+                      <option value="credit_card">Cartão de Crédito</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block opacity-70">Data</label>
+                    <input
+                      type="date"
+                      value={editingTransaction.date?.split('T')[0] || editingTransaction.date}
+                      onChange={(e) => setEditingTransaction((prev: Transaction) => ({ ...prev, date: e.target.value }))}
+                      className={`w-full p-4 rounded-2xl border ${
+                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+                      } outline-none`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block opacity-70">Tags</label>
+                    <TagInput
+                      tags={editingTransaction.tags || []}
+                      onTagsChange={(tags) => setEditingTransaction((prev: Transaction) => ({ ...prev, tags }))}
+                      placeholder="Adicionar tags..."
+                      darkMode={darkMode}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSaveEdit}
+                    disabled={editLoading}
+                    className="w-full py-4 theme-primary text-white rounded-2xl font-bold shadow-lg mt-2 active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    {editLoading ? 'Salvando...' : 'Salvar Alterações'}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.div>
   );
 }
