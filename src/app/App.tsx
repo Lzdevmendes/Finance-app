@@ -400,8 +400,10 @@ function TransactionModal({
   const [category, setCategory] = useState<CategoryType>(CategoryType.OTHER);
   const [account, setAccount] = useState<AccountType>(AccountType.CHECKING);
   const [tags, setTags] = useState<string[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [loading, setLoading] = useState(false);
+  const [date, setDate] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  });
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -448,11 +450,9 @@ function TransactionModal({
       return false;
     }
 
-    const selectedDate = new Date(date);
     const today = new Date();
-    today.setHours(23, 59, 59, 999); // End of today
-
-    if (selectedDate > today) {
+    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    if (date > todayString) {
       setError('Data não pode ser no futuro');
       return false;
     }
@@ -467,11 +467,12 @@ function TransactionModal({
     setCategory(CategoryType.OTHER);
     setAccount(AccountType.CHECKING);
     setTags([]);
-    setDate(new Date().toISOString().split('T')[0]);
+    const now = new Date();
+    setDate(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`);
     setError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -485,31 +486,19 @@ function TransactionModal({
       return;
     }
 
-    setLoading(true);
-    try {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Tempo limite esgotado. Verifique sua conexão e tente novamente.')), 15000)
-      );
-      await Promise.race([
-        addTransaction({
-          description: description.trim(),
-          value: numericValue,
-          type,
-          category,
-          account,
-          tags,
-          date: new Date(date + 'T12:00:00').toISOString(),
-        }),
-        timeout,
-      ]);
-      resetForm();
-      onClose();
-    } catch (error: any) {
-      console.error('Error adding transaction:', error);
-      setError(error.message || 'Erro ao adicionar transação. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
+    // Fire-and-forget: fecha o modal imediatamente, Firebase sincroniza via onSnapshot
+    addTransaction({
+      description: description.trim(),
+      value: numericValue,
+      type,
+      category,
+      account,
+      tags,
+      date: new Date(date + 'T12:00:00').toISOString(),
+    }).catch((err: any) => console.error('Error saving transaction:', err));
+
+    resetForm();
+    onClose();
   };
   if (!show) return null;
   return (
@@ -710,11 +699,12 @@ function TransactionModal({
               <input
                 type="date"
                 value={date}
+                max={(() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })()}
                 onChange={(e) => setDate(e.target.value)}
                 className={`w-full p-4 rounded-2xl border ${
                   darkMode
-                    ? 'bg-gray-700 border-gray-600'
-                    : 'bg-gray-50 border-gray-100'
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-gray-50 border-gray-100 text-gray-900'
                 } outline-none`}
               />
             </div>
@@ -749,10 +739,9 @@ function TransactionModal({
             </div>
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-4 theme-primary text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full py-4 theme-primary text-white rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all"
             >
-              {loading ? 'Salvando...' : 'Confirmar Lançamento'}
+              Confirmar Lançamento
             </button>
           </motion.form>
           </div>
@@ -782,8 +771,6 @@ function GoalModal({
   const [currentAmount, setCurrentAmount] = useState(
     editGoal?.currentAmount?.toString() || ''
   );
-  const [loading, setLoading] = useState(false);
-
   // Update form values when editGoal changes
   useEffect(() => {
     if (editGoal) {
@@ -819,7 +806,7 @@ function GoalModal({
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -828,30 +815,17 @@ function GoalModal({
     const targetNum = parseFloat(String(targetAmount).replace(',', '.')) || 0;
     const currentNum = parseFloat(String(currentAmount).replace(',', '.')) || 0;
 
-    setLoading(true);
-    try {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Tempo limite esgotado. Verifique sua conexão.')), 15000)
-      );
-      if (editGoal) {
-        await Promise.race([
-          updateGoal(editGoal.id, { name, targetAmount: targetNum, currentAmount: currentNum }),
-          timeout,
-        ]);
-      } else {
-        await Promise.race([
-          addGoal({ name, targetAmount: targetNum, currentAmount: currentNum, icon: 'target', color: theme }),
-          timeout,
-        ]);
-      }
-      resetForm();
-      onClose();
-    } catch (err: any) {
-      console.error('Error with goal:', err);
-      setError(err.message || 'Erro ao salvar meta. Tente novamente.');
-    } finally {
-      setLoading(false);
+    // Fire-and-forget: fecha o modal imediatamente, Firebase sincroniza via onSnapshot
+    if (editGoal) {
+      updateGoal(editGoal.id, { name, targetAmount: targetNum, currentAmount: currentNum })
+        .catch((err: any) => console.error('Error updating goal:', err));
+    } else {
+      addGoal({ name, targetAmount: targetNum, currentAmount: currentNum, icon: 'target', color: theme })
+        .catch((err: any) => console.error('Error adding goal:', err));
     }
+
+    resetForm();
+    onClose();
   };
 
   if (!show) return null;
@@ -961,10 +935,9 @@ function GoalModal({
                 </div>
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-4 theme-primary text-white rounded-2xl font-bold shadow-lg mt-2 active:scale-95 transition-all disabled:opacity-50"
+                  className="w-full py-4 theme-primary text-white rounded-2xl font-bold shadow-lg mt-2 active:scale-95 transition-all"
                 >
-                  {loading ? 'Salvando...' : editGoal ? 'Atualizar Meta' : 'Criar Meta'}
+                  {editGoal ? 'Atualizar Meta' : 'Criar Meta'}
                 </button>
               </form>
             </div>
